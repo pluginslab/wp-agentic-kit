@@ -158,12 +158,15 @@ if command -v perl >/dev/null; then
 fi
 
 # --- fresh git history in the scaffold ---
+# Tags the initial commit `scaffold` so reset.sh / dry-run helpers have a
+# stable anchor to roll back to.
 if [[ ! -d "$TARGET_DIR/.git" ]] && command -v git >/dev/null; then
   ( cd "$TARGET_DIR" \
     && git init -q \
     && git add -A \
     && git -c user.email=scaffold@local -c user.name=scaffold \
-         commit -q -m "init: scaffold $SLUG from wp-agentic-kit" ) || true
+         commit -q -m "init: scaffold $SLUG from wp-agentic-kit" \
+    && git tag scaffold ) || true
 fi
 
 echo ""
