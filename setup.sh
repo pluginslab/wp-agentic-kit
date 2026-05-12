@@ -1,16 +1,53 @@
 #!/usr/bin/env bash
 #
 # wp-agentic-kit setup
-# Run once after cloning. Replaces "Example Plugin" example values with yours
-# across every file in the kit.
+# Scaffolds the kit into a target directory, then renames the "Example Plugin"
+# placeholders with values you provide. The kit repo itself stays clean.
+#
+# Usage:
+#   ./setup.sh <target-dir>
 #
 set -euo pipefail
+
+KIT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") <target-dir>
+
+Copies the kit into <target-dir> and renames the "Example Plugin"
+placeholders to your plugin's identity. The target is created if it
+doesn't exist. If it exists, it must be empty.
+
+Example:
+  $(basename "$0") ../demo-plugin
+EOF
+}
+
+if [[ $# -lt 1 || "$1" == "-h" || "$1" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+TARGET_INPUT="$1"
+mkdir -p "$TARGET_INPUT"
+TARGET_DIR="$(cd "$TARGET_INPUT" && pwd)"
+
+if [[ "$TARGET_DIR" == "$KIT_DIR" ]]; then
+  echo "Refusing to scaffold into the kit itself. Pick a different target." >&2
+  exit 1
+fi
+
+if [[ -n "$(ls -A "$TARGET_DIR" 2>/dev/null)" ]]; then
+  echo "Target '$TARGET_DIR' is not empty. Aborting to avoid overwriting." >&2
+  exit 1
+fi
 
 echo "wp-agentic-kit setup"
 echo "===================="
 echo ""
-echo "This will replace the example values across the kit:"
-echo "  Example Plugin · pl-example · PLExample · PL_EXAMPLE_* · pl_example_*"
+echo "Source: $KIT_DIR"
+echo "Target: $TARGET_DIR"
 echo ""
 
 # --- inputs ---
@@ -43,7 +80,6 @@ NAMESPACE=$(echo "$SLUG" | awk -F- '{
 CONST_PREFIX=$(echo "$SLUG" | tr 'a-z-' 'A-Z_')
 FN_PREFIX=$(echo "$SLUG" | tr '-' '_')
 
-# --- summary + confirm ---
 cat <<EOF
 
 Generated values:
@@ -54,10 +90,24 @@ Generated values:
   Function prefix:    $FN_PREFIX
 
 EOF
-read -p "Proceed with find/replace? [y/N] " confirm
+read -p "Scaffold the kit into $TARGET_DIR with these values? [y/N] " confirm
 if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
   echo "Aborted. Nothing changed."
   exit 0
+fi
+
+# --- copy kit into target (rsync if available, fall back to cp) ---
+# Excludes: .git/ (fresh history in target), setup.sh (kit-only),
+# LICENSE (the new plugin picks its own).
+if command -v rsync >/dev/null; then
+  rsync -a \
+    --exclude='.git/' \
+    --exclude='setup.sh' \
+    --exclude='LICENSE' \
+    "$KIT_DIR/" "$TARGET_DIR/"
+else
+  ( cd "$KIT_DIR" && tar --exclude='./.git' --exclude='./setup.sh' --exclude='./LICENSE' -cf - . ) \
+    | ( cd "$TARGET_DIR" && tar -xf - )
 fi
 
 # --- portable sed -i ---
@@ -69,39 +119,56 @@ sed_inplace() {
   fi
 }
 
-# --- find files to touch ---
-files=$(grep -rl \
+# --- find files in target with placeholders ---
+files=$(cd "$TARGET_DIR" && grep -rl \
   --include='*.md' --include='*.php' --include='*.json' \
   --include='*.txt' --include='*.yml' --include='*.yaml' \
   -e 'Example Plugin' -e 'pl-example' -e 'PLExample' \
   -e 'PL_EXAMPLE' -e 'pl_example' \
   . 2>/dev/null \
-  | grep -v "^\./setup\.sh$" \
   | grep -v "/\.git/" \
   | grep -v "/vendor/" \
   | grep -v "/node_modules/" \
   || true)
 
 if [[ -z "$files" ]]; then
-  echo "No example values found in the repo. Already customized?"
+  echo "Warning: no placeholder values found in the copied kit."
   exit 0
 fi
 
 # --- replace (order matters: longer / more specific first) ---
 count=0
 while IFS= read -r f; do
-  sed_inplace "s/PL_EXAMPLE/$CONST_PREFIX/g" "$f"
-  sed_inplace "s/PLExample/$NAMESPACE/g" "$f"
-  sed_inplace "s/pl_example/$FN_PREFIX/g" "$f"
-  sed_inplace "s/pl-example/$SLUG/g" "$f"
-  sed_inplace "s/Example Plugin/$PLUGIN_NAME/g" "$f"
+  abs="$TARGET_DIR/${f#./}"
+  sed_inplace "s/PL_EXAMPLE/$CONST_PREFIX/g" "$abs"
+  sed_inplace "s/PLExample/$NAMESPACE/g" "$abs"
+  sed_inplace "s/pl_example/$FN_PREFIX/g" "$abs"
+  sed_inplace "s/pl-example/$SLUG/g" "$abs"
+  sed_inplace "s/Example Plugin/$PLUGIN_NAME/g" "$abs"
   count=$((count+1))
 done <<< "$files"
 
+# --- strip kit-meta HTML comments from CLAUDE.md / AGENTS.md ---
+# The kit's own instruction blocks are HTML comments; they're explicitly
+# marked as "strip before shipping". Use perl for portable multi-line edit.
+if command -v perl >/dev/null; then
+  for meta in "$TARGET_DIR/CLAUDE.md" "$TARGET_DIR/AGENTS.md"; do
+    [[ -f "$meta" ]] && perl -i -0pe 's/<!--.*?-->\s*//gs' "$meta"
+  done
+fi
+
+# --- fresh git history in the scaffold ---
+if [[ ! -d "$TARGET_DIR/.git" ]] && command -v git >/dev/null; then
+  ( cd "$TARGET_DIR" \
+    && git init -q \
+    && git add -A \
+    && git -c user.email=scaffold@local -c user.name=scaffold \
+         commit -q -m "init: scaffold $SLUG from wp-agentic-kit" ) || true
+fi
+
 echo ""
-echo "Replaced example values across $count file(s)."
+echo "Scaffolded $count file(s) into $TARGET_DIR"
 echo ""
-echo "Next steps:"
-echo "  1. Review the diff:    git diff"
-echo "  2. Commit:             git add -A && git commit -m 'init: customize wp-agentic-kit'"
-echo "  3. Remove this script: rm setup.sh"
+echo "Next:"
+echo "  cd $TARGET_DIR"
+echo "  claude        # start coding with the harness loaded"
