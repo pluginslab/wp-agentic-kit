@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "wp-devdocs": {
+      "command": "npx",
+      "args": ["wp-devdocs-mcp"]
+    },
+    "wp-blockmarkup": {
+      "command": "npx",
+      "args": ["wp-blockmarkup-mcp"]
+    },
+    "wp-playground": {
+      "command": "npx",
+      "args": ["wp-playground-mcp"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["chrome-devtools-mcp@latest"]
+    }
+  }
+}

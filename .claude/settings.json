@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(wp:*)",
+      "Bash(wp-env:*)",
+      "Bash(composer:*)",
+      "Bash(php:*)",
+      "Bash(npm:*)",
+      "Bash(pnpm:*)",
+      "Bash(npx:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(curl:*)",
+      "Bash(./vendor/bin/phpcs:*)",
+      "Bash(./vendor/bin/phpcbf:*)",
+      "Bash(./vendor/bin/phpunit:*)",
+      "Bash(./vendor/bin/phpstan:*)",
+      "Bash(./vendor/bin/psalm:*)",
+      "mcp__wp-devdocs",
+      "mcp__wp-blockmarkup",
+      "mcp__wp-playground",
+      "mcp__github",
+      "mcp__chrome-devtools"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/post-edit.sh" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/pre-commit.sh" }
+        ]
+      }
+    ]
+  }
+}

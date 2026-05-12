@@ -1,0 +1,31 @@
+# Personal Claude Code overrides — never commit
+.claude/settings.local.json
+.claude/projects/
+.claude/sessions/
+.claude/cache/
+.claude/history.jsonl
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build artifacts
+build/
+build-extensions/
+dist/
+
+# Local env / secrets
+.env
+.env.local
+.env.*.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*
