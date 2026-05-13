@@ -157,6 +157,34 @@ if command -v perl >/dev/null; then
   done
 fi
 
+# --- top up the wp-devdocs index with sources newer than the base bake ---
+# The container image ships pre-indexed with the 8 standard WordPress sources
+# (wp-core, gutenberg, plugin-handbook, etc.). This step adds the genuinely
+# fresh stuff — WP 7.0 AI Client, Abilities API — so /talk:mcp-devdocs has
+# canonical signatures to look up. Backgrounded so we don't block the demo;
+# narrate "indexing in the background, ready by the time we need it."
+if command -v npx >/dev/null; then
+  (
+    echo ""
+    echo "Indexing fresh WP 7.0 sources (background)..."
+    npx -y -p wp-devdocs-mcp wp-hooks source:add \
+      --name=wp-ai-client \
+      --type=github-public \
+      --repo=https://github.com/WordPress/wp-ai-client \
+      --content-type=source \
+      --no-index 2>/dev/null || true
+    npx -y -p wp-devdocs-mcp wp-hooks source:add \
+      --name=abilities-api \
+      --type=github-public \
+      --repo=https://github.com/WordPress/abilities-api \
+      --content-type=source \
+      --no-index 2>/dev/null || true
+    npx -y -p wp-devdocs-mcp wp-hooks index 2>&1 | tail -5
+    echo "wp-devdocs ready."
+  ) > "/tmp/setup-index-${SLUG}.log" 2>&1 &
+  echo "(indexing pid=$!; tail /tmp/setup-index-${SLUG}.log to follow)"
+fi
+
 # --- fresh git history in the scaffold ---
 # Tags the initial commit `scaffold` so reset.sh / dry-run helpers have a
 # stable anchor to roll back to.
