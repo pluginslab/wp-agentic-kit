@@ -171,12 +171,14 @@ if command -v npx >/dev/null; then
       --name=wp-ai-client \
       --type=github-public \
       --repo=https://github.com/WordPress/wp-ai-client \
+      --branch=trunk \
       --content-type=source \
       --no-index 2>/dev/null || true
     npx -y -p wp-devdocs-mcp wp-hooks source:add \
       --name=abilities-api \
       --type=github-public \
       --repo=https://github.com/WordPress/abilities-api \
+      --branch=trunk \
       --content-type=source \
       --no-index 2>/dev/null || true
     npx -y -p wp-devdocs-mcp wp-hooks index 2>&1 | tail -5
