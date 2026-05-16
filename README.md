@@ -23,20 +23,24 @@ If the talk taught the four D's (Delegação, Descrição, Discernimento, Dilig�
 | 2 | [`AGENTS.md`](./AGENTS.md) | Cross-tool mirror (Codex, Cursor, Gemini CLI, Copilot, Windsurf) |
 | 3 | [`.claude/settings.json`](./.claude/) | Permissions and allowed commands |
 | 4 | [`.mcp.json`](./.mcp.json) + [`mcp/`](./mcp/) | MCP servers shipped via project-scoped config |
-| 5 | [`.claude/skills/wordpress-development/`](./.claude/skills/wordpress-development/) | Interview-driven plugin / feature scaffolder |
-| 6 | [`.claude/agents/`](./.claude/agents/) | Sub-agents: security review, block builder, REST endpoint |
+| 5 | [`.claude/skills/`](./.claude/skills/) | Interview-driven plugin / feature scaffolder + the [WordPress/agent-skills](https://github.com/WordPress/agent-skills) library pulled fresh on scaffold |
+| 6 | [`.claude/agents/`](./.claude/agents/) | One sub-agent: `security-reviewer` (read-only audit). Block / REST work is covered by skills, not sub-agents. |
 | 7 | [`.claude/hooks/`](./.claude/hooks/) | Pre-commit gate (blocking) and post-edit lint (informational) |
 | 8 | [`docs/`](./docs/) | Eight-chapter walkthrough from zero to a fully configured harness |
 
 ## Quick start
 
 ```bash
-git clone https://github.com/pluginslab/wp-agentic-kit my-cool-plugin
-cd my-cool-plugin
-./setup.sh
+npm create wp-agentic-kit my-cool-plugin
 ```
 
-`setup.sh` asks for your plugin name and an optional vendor prefix, derives the slug / namespace / constant / function prefixes, then runs a find/replace across every file so the example values become yours. Review with `git diff`, commit, delete the script.
+The interactive scaffolder asks for the plugin name, an optional vendor prefix, a one-sentence description, an author, and then lets you pick the minimum WordPress and PHP versions from a short list. It fetches the kit from GitHub at the requested git ref, derives the slug / namespace / constant / function prefixes, runs a find-and-replace across every file, and initialises a fresh git repo with a `scaffold` tag on the initial commit. Requires Node 18+. Source lives in [`cli/`](./cli/).
+
+Need to pin a release?
+
+```bash
+npm create wp-agentic-kit my-cool-plugin -- --ref v0.2.0
+```
 
 If you'd rather adopt the kit into an existing plugin, copy individual pieces (`CLAUDE.md`, `AGENTS.md`, `.claude/`, `mcp/`) into your project and replace the example values by hand.
 

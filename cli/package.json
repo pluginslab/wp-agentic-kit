@@ -1,0 +1,37 @@
+{
+  "name": "create-wp-agentic-kit",
+  "version": "0.1.0",
+  "description": "Scaffold a new WordPress plugin from wp-agentic-kit. Run via `npm create wp-agentic-kit <target>`.",
+  "type": "module",
+  "bin": {
+    "create-wp-agentic-kit": "./index.js"
+  },
+  "main": "./index.js",
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "scaffold",
+    "agentic",
+    "claude-code",
+    "create"
+  ],
+  "author": "Pluginslab",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pluginslab/wp-agentic-kit.git",
+    "directory": "cli"
+  },
+  "homepage": "https://github.com/pluginslab/wp-agentic-kit#readme",
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "tar": "^7.4.3"
+  }
+}

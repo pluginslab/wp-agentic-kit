@@ -10,35 +10,25 @@
 
 You don't need to install MCP servers yourself — the kit's `.mcp.json` does that via `npx` on first call.
 
-## Clone the kit
+## Scaffold
 
 ```bash
-git clone https://github.com/pluginslab/wp-agentic-kit my-cool-plugin
+npm create wp-agentic-kit my-cool-plugin
 cd my-cool-plugin
 ```
 
-You're now inside the kit. The example values (`Example Plugin`, `pl-example`, `PLExample`, `PL_EXAMPLE_*`, `pl_example_*`) are placeholders. Don't start coding before you replace them.
-
-## Run setup
-
-```bash
-./setup.sh
-```
-
-Two questions:
+The interactive scaffolder asks for:
 
 1. **Plugin name** — human-friendly, e.g. `Order Tracker`
 2. **Vendor prefix** — optional, e.g. `acme` (press Enter to skip)
+3. **Description**, **author**, **minimum WordPress version**, **minimum PHP version**
 
-The script derives the slug, namespace, constants, and function prefixes from those answers, shows you the full set, and asks before running find/replace across every file in the kit.
+It derives the slug, namespace, constants, and function prefixes from those answers, shows you the full set, asks for confirmation, then fetches the kit from GitHub, runs find/replace across every file, initialises a fresh git repo with a `scaffold` tag on the initial commit, and kicks off background jobs to index WP docs and pull the upstream [WordPress/agent-skills](https://github.com/WordPress/agent-skills) library into `.claude/skills/`.
 
-After it finishes:
+Need to pin a release?
 
 ```bash
-git diff                 # review the changes
-git add -A
-git commit -m "init: customize wp-agentic-kit"
-rm setup.sh              # one-shot script, delete after use
+npm create wp-agentic-kit my-cool-plugin -- --ref v0.2.0
 ```
 
 ## Open your first session

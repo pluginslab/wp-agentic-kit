@@ -4,7 +4,7 @@ The kit's narrative companion. Read these in order if you've never set up an age
 
 ## Chapters
 
-1. [Getting started](./01-getting-started.md) — clone, run setup.sh, open your first session
+1. [Getting started](./01-getting-started.md) — scaffold with `npm create wp-agentic-kit`, open your first session
 2. [CLAUDE.md (Description)](./02-claude-md.md) — the project brief the agent reads on every turn
 3. [Skills](./03-skills.md) — naming the workflows you reach for repeatedly
 4. [MCP servers](./04-mcp-servers.md) — connecting WordPress, the browser, GitHub, and beyond

@@ -18,18 +18,45 @@ Skills are how your team's accumulated experience becomes executable. A senior e
 
 If you're typing the same multi-step instructions for the third time, that's the signal.
 
+## What ships in `.claude/skills/`
+
+Two sources, one directory:
+
+1. **`wordpress-development`** — the kit's own scaffolding skill. Interview-driven workflow for spinning up new plugins or adding features. Use it as a template for your own skills.
+2. **The [WordPress/agent-skills](https://github.com/WordPress/agent-skills) library** — pulled fresh from `trunk` at scaffold time by the Node CLI. 15 skills covering blocks, themes, REST, abilities, performance, PHPStan, Playground, WP-CLI, and more. These are reference material — knowledge the main agent loads when relevant.
+
+The two complement each other: the kit's skill is a *workflow* (interview → generate → verify), the upstream skills are *expertise* the main agent leans on while executing.
+
+```
+.claude/skills/
+├── wordpress-development/        # kit-shipped, interview-driven scaffolder
+│   ├── README.md
+│   ├── SKILL.md
+│   └── references/
+│       ├── SECURITY.md
+│       └── BLOCKS.md
+├── wp-plugin-development/        # upstream, fetched by `npm create wp-agentic-kit`
+├── wp-block-development/
+├── wp-rest-api/
+├── wp-abilities-api/
+├── wp-playground/
+├── wp-performance/
+├── wp-phpstan/
+├── wp-block-themes/
+├── wp-interactivity-api/
+├── wp-wpcli-and-ops/
+├── wp-project-triage/
+├── wp-plugin-directory-guidelines/
+├── wordpress-router/
+├── blueprint/
+└── wpds/
+```
+
+To refresh the upstream skills later, the simplest path is to scaffold a throwaway plugin (`npm create wp-agentic-kit /tmp/refresh`) and copy its `.claude/skills/wp-*` over yours. The same backgrounded clone runs every scaffold, so a fresh copy is always one command away.
+
 ## Anatomy of the wordpress-development skill
 
-The kit ships one skill, [`wordpress-development`](../.claude/skills/wordpress-development/). Read it as a template for your own.
-
-```
-.claude/skills/wordpress-development/
-├── README.md                  # human-facing summary
-├── SKILL.md                   # the agent-facing prompt (with frontmatter)
-└── references/
-    ├── SECURITY.md            # deep-dive loaded on demand via @
-    └── BLOCKS.md              # ditto
-```
+Read it as a template for your own.
 
 ### Frontmatter
 

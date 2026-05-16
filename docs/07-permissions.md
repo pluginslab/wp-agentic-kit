@@ -82,7 +82,7 @@ If you have a plugin already and want to add the kit's harness:
 2. Copy `.claude/` wholesale. Edit `settings.json` to match your existing commands.
 3. Copy `.mcp.json` to your project root.
 4. Copy `mcp/` and `docs/` if you want the documentation alongside.
-5. Don't copy `setup.sh` — it's only useful for the starter case.
+5. Don't copy `cli/` — it's the scaffolder, only useful for the starter case.
 
 Permissions stay project-scoped. Your existing plugin gets the kit's safety nets without altering its source tree.
 
