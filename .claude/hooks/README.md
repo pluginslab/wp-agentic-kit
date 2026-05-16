@@ -6,7 +6,7 @@ Deterministic safety net. CLAUDE.md is advisory — it suggests good behaviour. 
 
 ### `post-edit.sh` — PostToolUse on Edit/Write/MultiEdit
 
-Fires after the agent modifies any file. Runs the appropriate linter:
+Fires after the agent modifies a file. Reads `tool_input.file_path` from the hook payload and runs the linter for that one file:
 
 | File type | Linter |
 |---|---|
@@ -16,11 +16,13 @@ Fires after the agent modifies any file. Runs the appropriate linter:
 
 **Non-blocking.** Output goes to stderr where the agent reads it. The agent may still be mid-task; better to surface the issue and let it self-correct than to block a multi-step refactor halfway through.
 
+Lints only the file that just changed (not the whole working tree) — keeps the hook cheap when the agent does many edits in a single turn.
+
 ### `pre-commit.sh` — PreToolUse on Bash
 
-Fires before any `Bash` tool call. Filters: only acts if the command starts with `git commit`. Then runs the full quality gate and **blocks the commit** if anything fails.
+Fires before any `Bash` tool call. Filters: only acts if the command starts with `git commit`. On a match it delegates to [`scripts/quality.sh`](../../scripts/quality.sh) and **blocks the commit** if the suite fails.
 
-What it runs (if the tool is installed in the project):
+`scripts/quality.sh` is the single source of truth for "what does quality mean for this project." It gates each check on the tool being installed:
 
 - `./vendor/bin/phpcs --standard=WordPress`
 - `./vendor/bin/phpstan analyse`
@@ -28,7 +30,7 @@ What it runs (if the tool is installed in the project):
 - `./node_modules/.bin/stylelint "src/**/*.{css,scss}"`
 - `./vendor/bin/phpunit`
 
-If any one of them fails, the commit is blocked and the agent gets a message describing why. The agent can fix the issues and retry.
+If any one fails, `quality.sh` exits non-zero, the hook propagates the exit, and the commit is blocked with a message describing why. The agent can fix the issues and retry.
 
 ## Why hooks, not just CLAUDE.md
 
@@ -93,4 +95,17 @@ Parse with `python3 -c "import json,sys; ..."` (always available) or `jq` (often
 
 ## Git hooks vs. Claude Code hooks
 
-These hooks run inside Claude Code only. For a belt-and-suspenders setup that also gates commits made from outside the agent (your terminal, IDE, CI), install a `.git/hooks/pre-commit` that invokes the same quality suite. The Pluginslab pattern: a single `scripts/quality.sh` invoked by both `.claude/hooks/pre-commit.sh` and `.git/hooks/pre-commit`.
+These hooks run inside Claude Code only. To gate commits made from outside the agent (your terminal, IDE, CI) too, point them at the same `scripts/quality.sh`:
+
+```bash
+# .git/hooks/pre-commit
+#!/usr/bin/env bash
+exec ./scripts/quality.sh
+```
+
+```yaml
+# .github/workflows/ci.yml — example step
+- run: ./scripts/quality.sh
+```
+
+One script, three call sites, same gate everywhere.

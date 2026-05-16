@@ -36,13 +36,15 @@ The hook receives a JSON payload on stdin describing the event (which tool fired
 
 ### `post-edit.sh` (non-blocking)
 
-Fires on `Edit | Write | MultiEdit`. Reads `git status`, lints each modified file by extension (`phpcs` for PHP, `eslint` for JS/TS, `stylelint` for CSS/SCSS). Output to stderr where the agent reads it.
+Fires on `Edit | Write | MultiEdit`. Reads `tool_input.file_path` from the hook payload and lints just that one file (`phpcs` for PHP, `eslint` for JS/TS, `stylelint` for CSS/SCSS). Output to stderr where the agent reads it.
 
 Non-blocking on purpose: the agent might still be mid-refactor. Surfacing the issue lets it self-correct on the next pass; blocking would freeze a multi-step task.
 
+Linting only the changed file keeps the hook cheap when the agent does many edits in a single turn — a 10-edit refactor runs 10 single-file lints, not 10 full sweeps.
+
 ### `pre-commit.sh` (blocking)
 
-Fires on every `Bash` call. Filters: only acts if the command starts with `git commit`. Then runs the full quality suite:
+Fires on every `Bash` call. Filters: only acts if the command starts with `git commit`. On a match it delegates to `scripts/quality.sh`, which runs the full suite:
 
 - `phpcs --standard=WordPress`
 - `phpstan analyse` (if installed)
@@ -50,7 +52,7 @@ Fires on every `Bash` call. Filters: only acts if the command starts with `git c
 - `stylelint src/**/*.{css,scss}`
 - `phpunit`
 
-If any one fails, exits non-zero. The commit is blocked. The agent gets the stderr message and can fix.
+If any one fails, `quality.sh` exits non-zero, the hook propagates the exit, and the commit is blocked. The agent gets the stderr message and can fix.
 
 This is the safety net. Even if the agent "forgot" to run phpcs (because CLAUDE.md is advisory), the hook runs it.
 
@@ -81,7 +83,15 @@ Hooks add latency. A pre-commit hook that runs phpunit can add seconds. That's t
 
 ## Belt and suspenders
 
-Claude Code hooks only fire inside Claude Code. If commits also happen from a terminal, an IDE, or CI, install the same checks as a `.git/hooks/pre-commit` or via husky. The Pluginslab pattern: one `scripts/quality.sh` invoked from both `.claude/hooks/pre-commit.sh` and `.git/hooks/pre-commit`. Single source of truth, two invocation paths.
+Claude Code hooks only fire inside Claude Code. The kit ships `scripts/quality.sh` as the single source of truth for the suite — `.claude/hooks/pre-commit.sh` calls it. To gate commits from a terminal, an IDE, or CI too, point them at the same script:
+
+```bash
+# .git/hooks/pre-commit
+#!/usr/bin/env bash
+exec ./scripts/quality.sh
+```
+
+One script, three call sites, same gate everywhere.
 
 ---
 

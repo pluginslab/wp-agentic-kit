@@ -1,44 +1,36 @@
 #!/usr/bin/env bash
 #
 # Post-edit lint
-# Fires after the agent calls Edit or Write. Lints the modified files and
-# surfaces any issues to the agent via stderr. Never blocks — the agent
-# may still be mid-task and can fix lints on the next pass.
+# Fires after Edit / Write / MultiEdit. Lints just the file that was
+# edited (read from the hook payload) and surfaces output to stderr.
+# Never blocks — the agent may still be mid-task.
 #
 set -uo pipefail
 
-# Files changed since the last commit (or all changes if no commits yet).
-changed=$(git status --porcelain 2>/dev/null | awk '{print $2}')
+file_path=$(python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    print(data.get("tool_input", {}).get("file_path", ""))
+except Exception:
+    pass
+')
 
-[[ -z "$changed" ]] && exit 0
+[[ -z "$file_path" || ! -f "$file_path" ]] && exit 0
 
-print() { printf '%s\n' "$*" >&2; }
-
-run_phpcs() {
-  if [[ -x "./vendor/bin/phpcs" ]]; then
-    ./vendor/bin/phpcs --standard=WordPress --report=summary "$1" >&2 || true
-  fi
-}
-
-run_eslint() {
-  if [[ -x "./node_modules/.bin/eslint" ]]; then
-    ./node_modules/.bin/eslint "$1" >&2 || true
-  fi
-}
-
-run_stylelint() {
-  if [[ -x "./node_modules/.bin/stylelint" ]]; then
-    ./node_modules/.bin/stylelint "$1" >&2 || true
-  fi
-}
-
-for f in $changed; do
-  [[ ! -f "$f" ]] && continue
-  case "$f" in
-    *.php)             run_phpcs "$f" ;;
-    *.js|*.ts|*.jsx|*.tsx)  run_eslint "$f" ;;
-    *.scss|*.css)      run_stylelint "$f" ;;
-  esac
-done
+case "$file_path" in
+  *.php)
+    [[ -x "./vendor/bin/phpcs" ]] && \
+      ./vendor/bin/phpcs --standard=WordPress --report=summary "$file_path" >&2 || true
+    ;;
+  *.js|*.ts|*.jsx|*.tsx)
+    [[ -x "./node_modules/.bin/eslint" ]] && \
+      ./node_modules/.bin/eslint "$file_path" >&2 || true
+    ;;
+  *.scss|*.css)
+    [[ -x "./node_modules/.bin/stylelint" ]] && \
+      ./node_modules/.bin/stylelint "$file_path" >&2 || true
+    ;;
+esac
 
 exit 0
