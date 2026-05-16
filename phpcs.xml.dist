@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="pl-example">
+    <description>Coding standards for pl-example.</description>
+
+    <file>.</file>
+    <exclude-pattern>vendor/</exclude-pattern>
+    <exclude-pattern>node_modules/</exclude-pattern>
+    <exclude-pattern>build/</exclude-pattern>
+
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <rule ref="WordPress"/>
+    <rule ref="PHPCompatibilityWP"/>
+
+    <config name="minimum_supported_wp_version" value="6.7"/>
+    <config name="testVersion" value="8.2-"/>
+</ruleset>

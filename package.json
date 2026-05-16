@@ -1,0 +1,19 @@
+{
+    "name": "pl-example",
+    "version": "0.1.0",
+    "private": true,
+    "description": "An example WordPress plugin scaffolded with wp-agentic-kit. Replace this sentence with what your plugin actually does.",
+    "scripts": {
+        "build": "wp-scripts build",
+        "start": "wp-scripts start",
+        "lint": "npm run lint:js && npm run lint:css",
+        "lint:js": "wp-scripts lint-js src/",
+        "lint:css": "wp-scripts lint-style",
+        "format": "wp-scripts format src/",
+        "test": "wp-scripts test-unit-js",
+        "packages-update": "wp-scripts packages-update"
+    },
+    "devDependencies": {
+        "@wordpress/scripts": "^30.0.0"
+    }
+}
