@@ -10,7 +10,9 @@ Three reasons to spin up a sub-agent instead of doing the work in the main threa
 
 In the AI Fluency Framework, sub-agents make **Delegação** concrete: you don't just delegate a task, you delegate it to a specialist with bounded permissions.
 
-## The kit's three sub-agents
+## The kit's sub-agent
+
+The kit ships one. The bar for shipping more is high: a sub-agent has to do something a skill can't.
 
 ### `security-reviewer`
 
@@ -18,17 +20,11 @@ Read-only. Audits PHP and JS against the project's `SECURITY.md` checklist. Repo
 
 Use it: before opening a PR, before tagging a release, after touching input handling.
 
-### `gutenberg-block-builder`
+The read-only restriction is the whole point. A skill could *describe* the audit; only a sub-agent with a restricted tool list can *enforce* that the audit doesn't turn into a drive-by refactor. That structural guarantee is what makes it worth the extra hop.
 
-Full toolset. Specialist in Block API v3. Knows `block.json` schema, when to pick dynamic over static rendering, the WordPress component library.
+### Why not block-builder / rest-builder?
 
-Use it: when adding a block or refactoring one. The main agent can hand off the whole task.
-
-### `rest-endpoint-builder`
-
-Full toolset. Builds REST controllers that are safe by default — real permission callbacks, sanitize/validate callbacks per arg, `prepare_item_for_response` for shape consistency.
-
-Use it: when adding endpoints. Especially useful because REST mistakes are the most common security blunders in WordPress plugins.
+Tempting, but skills cover that ground more cheaply. A sub-agent without tool restrictions is just a skill with extra ceremony — same context isolation cost, same prompt-as-source-of-truth, no enforcement. Block and REST work is handled by the `wp-block-development` and `wp-rest-api` skills the kit pulls in from [WordPress/agent-skills](https://github.com/WordPress/agent-skills).
 
 ## Tool restriction is the lever
 
@@ -51,12 +47,11 @@ From inside Claude Code:
 
 ```
 > use the security-reviewer subagent to audit the changes on this branch
-> have the gutenberg-block-builder add an order-status block, dynamic render
 ```
 
 The main agent recognizes the sub-agent by name, spawns it with its own context, hands off the task, and integrates the result when the sub-agent reports back.
 
-You can also let the main agent decide. The descriptions in sub-agent frontmatter help it match user intent to the right specialist.
+You can also let the main agent decide. The description in sub-agent frontmatter helps it match user intent.
 
 ## When NOT to use a sub-agent
 

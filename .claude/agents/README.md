@@ -4,18 +4,17 @@ Sub-agents the main Claude Code agent can delegate to. Each one runs in its own 
 
 ## Why use a sub-agent
 
-- **Context isolation** — a deep code review doesn't bloat the main agent's working memory.
-- **Tool discipline** — the security reviewer has no `Edit` or `Write`, so it can't accidentally "fix" things you didn't ask for.
-- **Parallelism** — independent sub-agents can run concurrently.
-- **Reusable specialty** — write the security playbook once; invoke it on every PR.
+The kit's bar for shipping a sub-agent: it has to do something a skill can't. In practice that means either **tool restriction** (the sub-agent literally can't call `Edit` / `Write`) or **context isolation** for work that would otherwise dump thousands of lines into the main agent's window.
+
+A "specialist who writes blocks" or "specialist who writes REST endpoints" doesn't clear that bar — it's a skill in disguise. So the kit ships exactly one sub-agent.
 
 ## Shipped sub-agents
 
 | Sub-agent | Tools | When to invoke |
 |---|---|---|
 | [`security-reviewer`](./security-reviewer.md) | Read, Grep, Glob, Bash | Before merging a PR, before a release, after any change to input handling |
-| [`gutenberg-block-builder`](./gutenberg-block-builder.md) | full | When adding or refactoring a Gutenberg block |
-| [`rest-endpoint-builder`](./rest-endpoint-builder.md) | full | When adding or extending a REST API route |
+
+Block and REST work is handled by the `wp-block-development` and `wp-rest-api` skills the kit pulls from [WordPress/agent-skills](https://github.com/WordPress/agent-skills) into `.claude/skills/`. The main agent loads them on demand — no handoff needed.
 
 ## How invocation works
 
@@ -23,7 +22,6 @@ Inside Claude Code:
 
 ```
 > use the security-reviewer subagent to audit the changes on this branch
-> have the gutenberg-block-builder add an order-status block, dynamic render
 ```
 
 The main agent recognizes the sub-agent name, spawns it with its own context, and reports back when it finishes.
@@ -38,7 +36,7 @@ The main agent recognizes the sub-agent name, spawns it with its own context, an
 ## Naming convention
 
 - kebab-case filename matches the `name:` in frontmatter.
-- Verb-noun if the sub-agent acts on something (`security-reviewer`, `block-builder`).
+- Verb-noun if the sub-agent acts on something (`security-reviewer`, `migration-auditor`).
 - Plural-noun if it manages a set (`release-manager`).
 
 ## Tool restrictions

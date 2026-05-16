@@ -14,32 +14,31 @@ You open a Claude Code session and say:
 
 ```
 > i need a gutenberg block "order-status" that shows the current status of an order,
-  and a REST endpoint to fetch the status by order id. dynamic render. use the
-  block-builder and rest-builder sub-agents.
+  and a REST endpoint to fetch the status by order id. dynamic render.
 ```
 
-The main agent reads `CLAUDE.md` (so it knows the namespace, slug, conventions, security rules) and breaks the task into two: a block and an endpoint. It hands off to the specialist sub-agents in parallel.
+The main agent reads `CLAUDE.md` (so it knows the namespace, slug, conventions, security rules) and breaks the task into two: a block and an endpoint. It loads the `wp-rest-api` and `wp-block-development` skills from `.claude/skills/` — both pulled in from [WordPress/agent-skills](https://github.com/WordPress/agent-skills) at scaffold time — and works through them in sequence.
 
-## 2 — REST endpoint (Descrição via skill + sub-agent)
+## 2 — REST endpoint (Descrição via skill)
 
-`rest-endpoint-builder` runs. It:
+Loading `wp-rest-api` gives the main agent the controller pattern, permission-callback rules, schema conventions. It:
 
-- Reads the plugin's main file to find the namespace and existing controllers.
+- Reads the plugin's main file to find the namespace and any existing controllers.
 - Asks one clarifying question: *"Read-only public, or authenticated?"* You answer authenticated.
 - Generates `includes/api/class-rest-order-status.php` extending `WP_REST_Controller`, with a real `permission_callback`, `sanitize_callback` on the `id` argument, and a `prepare_item_for_response` that escapes everything.
-- The `post-edit.sh` hook fires after each Write call. `phpcs` runs against the new file; one warning surfaces about a docblock format. The sub-agent fixes it.
-- Sub-agent reports back: route registered, two endpoints (`/orders/{id}/status` and the collection), curl smoke test passes.
+- The `post-edit.sh` hook fires after each Write call. `phpcs` runs against the new file; one warning surfaces about a docblock format. The agent fixes it.
+- Reports back: route registered, two endpoints (`/orders/{id}/status` and the collection), curl smoke test passes.
 
-## 3 — Gutenberg block (Descrição via skill + sub-agent)
+## 3 — Gutenberg block (Descrição via skill)
 
-`gutenberg-block-builder` runs in parallel. It:
+Loading `wp-block-development` gives the main agent Block API v3 conventions and `block.json` schema. It:
 
-- Reads `.claude/skills/wordpress-development/references/BLOCKS.md` for the layout convention.
+- Reads `.claude/skills/wordpress-development/references/BLOCKS.md` for the kit's own layout conventions.
 - Asks: *"You said dynamic — confirm `render.php` instead of `save.js`?"* You confirm.
 - Generates `src/blocks/order-status/` with `block.json`, `index.js`, `edit.js`, `render.php`, `style.scss`, `editor.scss`.
 - Validates the produced block markup via the `wp-blockmarkup` MCP.
 - Runs `npm run build`, confirms output at `build/blocks/order-status/`.
-- Sub-agent reports back: block registered via the existing auto-register loop, no PHP changes needed beyond the build.
+- Reports back: block registered via the existing auto-register loop, no PHP changes needed beyond the build.
 
 ## 4 — Discernimento (the tests are the line)
 
