@@ -31,15 +31,19 @@ If the talk taught the four D's (Delegação, Descrição, Discernimento, Dilig�
 ## Quick start
 
 ```bash
-npm create wp-agentic-kit my-cool-plugin
+npm create wp-ai-plugin my-cool-plugin
+# or
+npx create-wp-ai-plugin my-cool-plugin
 ```
 
-The interactive scaffolder asks for the plugin name, an optional vendor prefix, a one-sentence description, an author, and then lets you pick the minimum WordPress and PHP versions from a short list. It fetches the kit from GitHub at the requested git ref, derives the slug / namespace / constant / function prefixes, runs a find-and-replace across every file, and initialises a fresh git repo with a `scaffold` tag on the initial commit. Requires Node 18+. Source lives in [`cli/`](./cli/).
+The interactive scaffolder asks for the plugin name, an optional vendor prefix, a one-sentence description, an author, and then lets you pick the minimum WordPress and PHP versions from a short list. It fetches the kit from GitHub at the requested git ref, derives the slug / namespace / constant / function prefixes, runs a find-and-replace across every file, runs `composer install` and `npm install`, pulls [`WordPress/agent-skills`](https://github.com/WordPress/agent-skills) into `.claude/skills/`, and initialises a fresh git repo with a `scaffold` tag on the initial commit.
+
+**Prerequisites:** Node 18+ and `npm`, PHP 8.2+ and `composer`, `git` on `$PATH`. The CLI source lives in [`cli/`](./cli/), published to npm as [`create-wp-ai-plugin`](https://www.npmjs.com/package/create-wp-ai-plugin).
 
 Need to pin a release?
 
 ```bash
-npm create wp-agentic-kit my-cool-plugin -- --ref v0.2.0
+npm create wp-ai-plugin my-cool-plugin -- --ref v0.2.0
 ```
 
 If you'd rather adopt the kit into an existing plugin, copy individual pieces (`CLAUDE.md`, `AGENTS.md`, `.claude/`, `mcp/`) into your project and replace the example values by hand.

@@ -13,7 +13,9 @@ You don't need to install MCP servers yourself — the kit's `.mcp.json` does th
 ## Scaffold
 
 ```bash
-npm create wp-agentic-kit my-cool-plugin
+npm create wp-ai-plugin my-cool-plugin
+# or
+npx create-wp-ai-plugin my-cool-plugin
 cd my-cool-plugin
 ```
 
@@ -28,7 +30,7 @@ It derives the slug, namespace, constants, and function prefixes from those answ
 Need to pin a release?
 
 ```bash
-npm create wp-agentic-kit my-cool-plugin -- --ref v0.2.0
+npm create wp-ai-plugin my-cool-plugin -- --ref v0.2.0
 ```
 
 ## Open your first session

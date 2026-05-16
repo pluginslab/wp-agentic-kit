@@ -3,10 +3,10 @@
 <!--
 ========================================================================
 HOW TO USE THIS FILE
-This file is part of wp-agentic-kit. Run `npm create wp-agentic-kit
-<target>` once after cloning to replace the "Example Plugin" /
-"pl-example" / "PLExample" example values with your own across every
-file in the kit.
+This file is part of wp-agentic-kit. Run `npm create wp-ai-plugin
+<target>` (or `npx create-wp-ai-plugin <target>`) once after cloning
+to replace the "Example Plugin" / "pl-example" / "PLExample" example
+values with your own across every file in the kit.
 
 CLAUDE.md and AGENTS.md are kept identical so any agent finds the
 instructions, whatever name it looks for. Edit one and copy to the

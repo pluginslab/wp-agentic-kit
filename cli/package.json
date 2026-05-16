@@ -1,10 +1,10 @@
 {
-  "name": "create-wp-agentic-kit",
+  "name": "create-wp-ai-plugin",
   "version": "0.1.0",
-  "description": "Scaffold a new WordPress plugin from wp-agentic-kit. Run via `npm create wp-agentic-kit <target>`.",
+  "description": "Scaffold a new WordPress plugin from wp-agentic-kit, configured for agentic engineering with Claude Code. Run via `npm create wp-ai-plugin <target>`.",
   "type": "module",
   "bin": {
-    "create-wp-agentic-kit": "./index.js"
+    "create-wp-ai-plugin": "./index.js"
   },
   "main": "./index.js",
   "files": [

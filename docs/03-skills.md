@@ -35,7 +35,7 @@ The two complement each other: the kit's skill is a *workflow* (interview → ge
 │   └── references/
 │       ├── SECURITY.md
 │       └── BLOCKS.md
-├── wp-plugin-development/        # upstream, fetched by `npm create wp-agentic-kit`
+├── wp-plugin-development/        # upstream, fetched by `npm create wp-ai-plugin`
 ├── wp-block-development/
 ├── wp-rest-api/
 ├── wp-abilities-api/
@@ -52,7 +52,7 @@ The two complement each other: the kit's skill is a *workflow* (interview → ge
 └── wpds/
 ```
 
-To refresh the upstream skills later, the simplest path is to scaffold a throwaway plugin (`npm create wp-agentic-kit /tmp/refresh`) and copy its `.claude/skills/wp-*` over yours. The same backgrounded clone runs every scaffold, so a fresh copy is always one command away.
+To refresh the upstream skills later, the simplest path is to scaffold a throwaway plugin (`npm create wp-ai-plugin /tmp/refresh`) and copy its `.claude/skills/wp-*` over yours. The same clone runs every scaffold, so a fresh copy is always one command away.
 
 ## Anatomy of the wordpress-development skill
 

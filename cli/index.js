@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * create-wp-agentic-kit
+ * create-wp-ai-plugin
  *
  * Fetches the wp-agentic-kit repo at the requested git ref, runs an
  * interactive interview, then substitutes the example plugin identity
@@ -70,7 +70,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-	console.log(`Usage: npm create wp-agentic-kit <target-dir> [-- --ref <branch-or-tag>]
+	console.log(`Usage: npm create wp-ai-plugin <target-dir> [-- --ref <branch-or-tag>]
 
 Fetches the wp-agentic-kit template at <ref> (default: ${DEFAULT_REF}),
 copies it into <target-dir>, and replaces the example plugin identity
@@ -78,8 +78,9 @@ with values you choose interactively. <target-dir> is created if it
 doesn't exist; it must be empty otherwise.
 
 Examples:
-  npm create wp-agentic-kit my-cool-plugin
-  npm create wp-agentic-kit ../demo -- --ref v0.2.0`);
+  npm create wp-ai-plugin my-cool-plugin
+  npx create-wp-ai-plugin my-cool-plugin
+  npm create wp-ai-plugin ../demo -- --ref v0.2.0`);
 }
 
 function bail(message) {

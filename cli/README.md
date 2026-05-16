@@ -1,11 +1,13 @@
-# create-wp-agentic-kit
+# create-wp-ai-plugin
 
 Interactive scaffolder for [wp-agentic-kit](https://github.com/pluginslab/wp-agentic-kit). Fetches the kit at the requested git ref and replaces the example plugin identity with values you choose.
 
 ## Usage
 
 ```bash
-npm create wp-agentic-kit my-cool-plugin
+npm create wp-ai-plugin my-cool-plugin
+# or
+npx create-wp-ai-plugin my-cool-plugin
 ```
 
 You'll be prompted for:
@@ -22,7 +24,7 @@ The CLI derives the slug, namespace, and constant/function prefixes from your in
 ### Pinning a release
 
 ```bash
-npm create wp-agentic-kit my-cool-plugin -- --ref v0.2.0
+npm create wp-ai-plugin my-cool-plugin -- --ref v0.2.0
 ```
 
 Any branch, tag, or commit SHA on the upstream repo works.
