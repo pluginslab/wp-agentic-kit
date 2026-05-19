@@ -7,7 +7,7 @@
  * with values you provide. See README.md in this package for usage.
  */
 import { intro, outro, text, select, confirm, isCancel, cancel, spinner, note } from '@clack/prompts';
-import { existsSync, readdirSync, readFileSync, writeFileSync, rmSync, mkdirSync, openSync, closeSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, rmSync, mkdirSync, openSync, closeSync, renameSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { execFileSync, spawn } from 'node:child_process';
@@ -165,6 +165,32 @@ async function substitute(targetDir, ctx) {
 	}
 	await walk(targetDir);
 	return count;
+}
+
+/**
+ * Rename any file whose basename contains the example slug (`pl-example`)
+ * to use the user's slug. WordPress plugins are expected to have a main
+ * file named `{slug}.php`, so leaving `pl-example.php` in place would break
+ * the convention even if the file's contents were rewritten correctly.
+ */
+function renameSlugFiles(targetDir, ctx) {
+	if (ctx.slug === 'pl-example') return;
+	const queue = [targetDir];
+	while (queue.length) {
+		const dir = queue.shift();
+		for (const entry of readdirSync(dir, { withFileTypes: true })) {
+			const p = join(dir, entry.name);
+			if (entry.isDirectory()) {
+				if (SKIP_DIRS.has(entry.name)) continue;
+				queue.push(p);
+				continue;
+			}
+			if (!entry.isFile()) continue;
+			if (!entry.name.includes('pl-example')) continue;
+			const renamed = entry.name.split('pl-example').join(ctx.slug);
+			renameSync(p, join(dir, renamed));
+		}
+	}
 }
 
 function stripKitMetaComments(targetDir) {
@@ -410,6 +436,7 @@ async function main() {
 		phpVersion,
 	};
 	const changed = await substitute(targetDir, ctx);
+	renameSlugFiles(targetDir, ctx);
 	stripKitMetaComments(targetDir);
 	writeMinimalReadme(targetDir, ctx);
 	spin.stop(`Rewrote ${changed} file(s)`);
