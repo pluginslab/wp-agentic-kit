@@ -249,6 +249,10 @@ async function runShellJob(name, slug, script, spin, label) {
 }
 
 const WP_DEVDOCS_SCRIPT = `
+# wp-core first — required so theme-json's preset_ref classification works
+# (soft-degrades to schema-only otherwise, per wp-devdocs-mcp docs).
+npx -y -p wp-devdocs-mcp wp-hooks quick-add wp-core --no-index 2>/dev/null || true
+npx -y -p wp-devdocs-mcp wp-hooks quick-add theme-json --no-index 2>/dev/null || true
 npx -y -p wp-devdocs-mcp wp-hooks source:add \\
 	--name=wp-ai-client \\
 	--type=github-public \\
@@ -471,7 +475,7 @@ async function main() {
 
 	const indexingResults = [
 		await runShellJob('agent-skills', identity.slug, agentSkillsScript(targetDir), spin, 'Syncing WordPress/agent-skills into .claude/skills/'),
-		await runShellJob('wp-devdocs', identity.slug, WP_DEVDOCS_SCRIPT, spin, 'Indexing wp-devdocs sources (WP 7.0 + abilities-api)'),
+		await runShellJob('wp-devdocs', identity.slug, WP_DEVDOCS_SCRIPT, spin, 'Indexing wp-devdocs sources (wp-core + theme-json + wp-ai-client + abilities-api)'),
 		await runShellJob('wp-blockmarkup', identity.slug, WP_BLOCKMARKUP_SCRIPT, spin, 'Indexing wp-blockmarkup (gutenberg-core)'),
 	];
 
