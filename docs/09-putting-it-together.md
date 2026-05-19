@@ -19,13 +19,13 @@ You open a Claude Code session and say:
 
 The main agent reads `CLAUDE.md` (namespace, slug, conventions, security rules), notices a plugin already exists in the working directory, and invokes the `wordpress-feature` skill. The skill walks through its phases:
 
-- **Phase 0 — Context.** Reads `.claude/plans/constitution.md` to confirm `@wordpress/blocks`, `@wordpress/api-fetch`, and the rest of the needed packages are allowlisted. They are.
+- **Phase 0 — Context.** Reads `.claude/plans/constitution.md` to confirm the needed `@wordpress/*` packages are in the defaults section, and the sanitize/escape/capability the plan will use are in the strict allowlists. They are.
 - **Phase 1 — Spec.** Allocates `.claude/plans/features/003-order-status/` and writes `spec.md` — what's being built, why, acceptance bullets, an explicit `Out of scope` (no list view, no historical timeline, no notifications).
-- **Phase 2 — Plan.** Writes `plan.md` with phased steps: each one names the file paths it'll touch and the test it'll write first.
+- **Phase 2 — Plan.** Writes `plan.md` with phased steps: each one names the file paths it'll touch and the test it'll write first. The Freeze assessment at the bottom: `[x]` touches security-relevant code (REST permission callback), `[x]` changes the public API surface (new REST route). Recommendation: **freeze**.
 
 ## 2 — Plan freeze (Discernimento)
 
-The skill stops. It runs `./scripts/open-plan-pr.sh 003-order-status`, which commits `spec.md` and `plan.md` on a `plan/003-order-status` branch and opens a PR with the spec summary and plan approach pre-filled.
+The assessment recommends freeze, so the skill stops. It runs `./scripts/open-plan-pr.sh 003-order-status`, which commits `spec.md` and `plan.md` on a `plan/003-order-status` branch and opens a PR with the spec summary and plan approach pre-filled.
 
 The agent then dispatches the `plan-reviewer` sub-agent against the PR. Read-only audit: file paths in every step ✓, `Out of scope` present ✓, no library outside the constitution ✓, tests mentioned ✓. Clean.
 

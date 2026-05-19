@@ -1,11 +1,11 @@
 ---
-description: Commit the active feature's spec.md + plan.md on a plan/ branch and open a PR for human review. Wraps scripts/open-plan-pr.sh.
+description: Commit the active feature's spec.md + plan.md on a plan/ branch and open a PR for human review. Wraps scripts/open-plan-pr.sh. Use when the freeze assessment recommends freeze, or when the human is overriding a "proceed" recommendation.
 argument-hint: "[feature-slug]"
 ---
 
 # Plan freeze
 
-Run the plan-freeze flow for the active feature (or the slug provided as `$ARGUMENTS` if specified).
+Run the plan-freeze flow for the active feature (or the slug provided as `$ARGUMENTS` if specified). This command is meant for plans whose Freeze assessment recommends **freeze**, or for explicit human override of a "proceed" recommendation. If the assessment says "proceed" and no override was given, ask the user to confirm before proceeding.
 
 1. If `$ARGUMENTS` is empty, locate the active feature: the most recently modified `.claude/plans/features/*/progress.md` whose `status:` is not `complete|done|shipped|archived|completed`. Use its directory's basename as the slug.
 2. If `$ARGUMENTS` is non-empty, use it as the slug. Verify `.claude/plans/features/$ARGUMENTS/spec.md` and `plan.md` both exist; refuse if not.

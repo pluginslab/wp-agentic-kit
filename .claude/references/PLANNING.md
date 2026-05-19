@@ -22,7 +22,12 @@ The split is purposeful:
 
 ## constitution.md
 
-Project-level allowlist. Written once at scaffold time, edited deliberately. The agent treats anything not on the list as "ask the user first."
+Project-level guidance with two binding levels:
+
+- **Defaults** — what we usually reach for (dependencies, tooling). The agent should prefer these but extending the list is fine; record the addition with a note in `findings.md` or the commit message.
+- **Allowed (strict)** — security-relevant choices (sanitizers, escapers, capability constants, forbidden constructs). The agent must NOT deviate without explicit human approval. The failure mode is a CVE, not a style nit.
+
+The distinction matters. Treating everything as strict makes the agent ask permission for trivia and slows the work to a crawl. Treating nothing as strict puts you one missing escape away from disclosure.
 
 ### Template
 
@@ -38,21 +43,23 @@ Last updated: {YYYY-MM-DD}
 - Node: >= 20
 - Deploy lane: {none | Ploi auto-deploy | GHA + Tailscale | custom}
 
-## Allowed npm dependencies
+## Default npm dependencies
+
+The packages we expect to reach for. Extend when a feature needs it; note why.
 
 - `@wordpress/scripts` (build)
 - `@wordpress/blocks`, `@wordpress/block-editor`, `@wordpress/components`, `@wordpress/element`, `@wordpress/i18n`, `@wordpress/api-fetch`
 - `@wordpress/hooks`, `@wordpress/data`
-- {add others by amending this file}
 
-Anything not on this list requires a PR that adds it here first.
+## Default Composer dependencies
 
-## Allowed Composer dependencies
-
-- (none beyond dev tooling unless added here)
 - Dev: `squizlabs/php_codesniffer`, `wp-coding-standards/wpcs`, `phpunit/phpunit`
 
-## Allowed input sanitizers
+Same rule: extend when needed; note why.
+
+## Allowed input sanitizers (strict)
+
+Sanitizing with anything else is a bug. The wrong sanitizer for the context is a CVE.
 
 - `sanitize_text_field`, `sanitize_email`, `sanitize_key`, `sanitize_file_name`
 - `sanitize_hex_color`, `sanitize_textarea_field`
@@ -60,18 +67,20 @@ Anything not on this list requires a PR that adds it here first.
 - `esc_url_raw` (for storage)
 - `wp_kses_post`, `wp_kses` (with explicit allowlist)
 
-## Allowed output escapers
+## Allowed output escapers (strict)
+
+Same rule. Escape with one of these, picked by context.
 
 - `esc_html`, `esc_attr`, `esc_url`, `esc_js`
 - `wp_kses_post`, `wp_kses` (with explicit allowlist)
 - `esc_html__`, `esc_attr__`, `esc_html_e`, `esc_attr_e` (translated)
 
-## Allowed capability constants
+## Allowed capability constants (strict)
 
 - `manage_options` — admin-only settings
 - `edit_posts` — content editors
 - `read` — any logged-in user
-- {add others by amending this file with the reason}
+- {add custom caps here when introduced; they must exist somewhere or the check is meaningless}
 
 ## Quality gates (run before merge)
 
@@ -80,7 +89,7 @@ Anything not on this list requires a PR that adds it here first.
 - `./vendor/bin/phpunit` — PHP unit tests
 - `npm test` — JS tests (if blocks/extensions present)
 
-## Forbidden constructs
+## Forbidden constructs (strict)
 
 - `eval`, `extract`, `create_function`, variable variables (`$$x`)
 - `unserialize` on user data — use `json_decode`
@@ -97,8 +106,9 @@ Anything not on this list requires a PR that adds it here first.
 
 ### Why this shape
 
-- **Allowlist not prose.** "Use modern WordPress APIs" is interpretable; a list of seven exact package names is not. The model has training on bad-pattern WordPress code; the constitution overrides priors.
-- **One reason per capability.** When the constitution is edited to add `edit_users`, the reason gets committed alongside it. Drift becomes auditable.
+- **Two binding levels, not one.** Security-relevant lists bind hard because the cost of getting them wrong is a vulnerability. Dependency lists bind soft because the cost of an "extra" library is at worst review-worthy, not exploitable.
+- **Allowlist over prose for the strict lists.** "Use modern WordPress APIs" is interpretable; a list of exact function names is not. The model's training contains a decade of bad WordPress patterns; the strict sections override those priors.
+- **Defaults are advisory.** The agent reaches for them first. If a feature genuinely needs `clsx` or `date-fns`, the agent uses it and notes the addition in `findings.md`. No PR ceremony for utility libraries.
 - **Stack at the top.** First thing the agent reads. Anything below is conditional on the stack matching.
 
 ---
@@ -173,6 +183,19 @@ REST endpoint." If you can't write this in 3 sentences, the spec isn't ready.}
 ## Risks / open questions
 
 - {Anything the spec didn't fully resolve — flag it before you start coding.}
+
+## Freeze assessment
+
+Mark every box that applies. Any one yes → recommend plan freeze.
+
+- [ ] Touches security-relevant code (sanitizers, escapers, capability checks, REST permission callbacks, file uploads, raw queries, auth).
+- [ ] Adds a new dependency (npm or Composer) outside the constitution's defaults.
+- [ ] Modifies database schema (new tables, ALTER, migrations, custom post types with new meta).
+- [ ] Changes the public API surface (REST routes, hook signatures, options keys, filter/action names).
+- [ ] Cross-cuts more than 3 files.
+
+**Recommendation:** {freeze | proceed in-session}
+**Reason:** {one sentence — why this recommendation, especially when overriding the checkbox default}
 ```
 
 ### Why this shape
@@ -181,6 +204,7 @@ REST endpoint." If you can't write this in 3 sentences, the spec isn't ready.}
 - **Test step encouraged, not required.** The constitution names the test tools; the plan names the specific test. Skip when genuinely untestable (UI tweaks); always list it for behavior.
 - **"Why" only when non-obvious.** If the step description self-explains, no `Why:`. Prevents comment rot.
 - **Risks at the bottom.** When you start coding and hit an unknown, you check here first. If the unknown isn't listed, the plan needed another pass.
+- **Freeze assessment, not a hard freeze rule.** A typo fix and a new REST endpoint shouldn't go through the same ceremony. The checklist makes the call explicit and reviewable — the agent can't quietly skip the freeze, but doesn't have to drag every change through a plan PR either.
 
 ---
 

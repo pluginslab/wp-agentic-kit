@@ -32,3 +32,14 @@ Extend the existing REST controller base in `includes/api/class-rest.php` with a
 ## Risks / open questions
 
 - None — this is a trivial example. Real features would name dependencies on existing schemas, expected race conditions, or rollback strategy here.
+
+## Freeze assessment
+
+- [x] Touches security-relevant code (sanitizers, escapers, capability checks, REST permission callbacks, file uploads, raw queries, auth).
+- [ ] Adds a new dependency (npm or Composer) outside the constitution's defaults.
+- [ ] Modifies database schema (new tables, ALTER, migrations, custom post types with new meta).
+- [x] Changes the public API surface (REST routes, hook signatures, options keys, filter/action names).
+- [ ] Cross-cuts more than 3 files.
+
+**Recommendation:** freeze
+**Reason:** new REST route is part of the public API and uses a permission callback; even a trivial endpoint deserves the plan-PR loop because the pattern propagates.

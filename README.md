@@ -26,7 +26,7 @@ Plus curated MCP servers and the scaffolding CLI that sets it all up in one comm
 | 3 | [`.claude/settings.json`](./.claude/) | Permissions and allowed commands |
 | 4 | [`.mcp.json`](./.mcp.json) + [`mcp/`](./mcp/) | MCP servers shipped via project-scoped config |
 | 5 | [`.claude/skills/`](./.claude/skills/) | Two skills: `wordpress-scaffold` (greenfield plugin) and `wordpress-feature` (feature + maintenance). Each writes plan artifacts before generating code. Plus the [WordPress/agent-skills](https://github.com/WordPress/agent-skills) library pulled fresh on scaffold |
-| 6 | [`.claude/plans/`](./.claude/plans/) | Durable cross-session memory — `constitution.md` allowlists, per-feature `spec.md` / `plan.md` / `progress.md`, archived plans |
+| 6 | [`.claude/plans/`](./.claude/plans/) | Durable cross-session memory — `constitution.md` (strict for security, default for dependencies), per-feature `spec.md` / `plan.md` / `progress.md`, archived plans |
 | 7 | [`.claude/agents/`](./.claude/agents/) | Two read-only sub-agents: `plan-reviewer` (audits spec/plan) and `security-reviewer` (audits code). Block / REST work is covered by skills. |
 | 8 | [`.claude/hooks/`](./.claude/hooks/) | Pre-commit gate (blocking), post-edit lint, `UserPromptSubmit` plan injection, `Stop` progress timestamp, `SessionStart` orientation banner |
 | 9 | [`.claude/commands/`](./.claude/commands/) | Slash commands wrapping common operations — `/plan-freeze`, `/audit-plan`, `/ship-feature` |

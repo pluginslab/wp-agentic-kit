@@ -159,7 +159,7 @@ Deeper details: @.claude/skills/wordpress-feature/SKILL.md (and @.claude/skills/
 
 The agent's load-bearing memory across sessions lives under `.claude/plans/`:
 
-- `.claude/plans/constitution.md` — project allowlists (deps, sanitizers, escapers, caps). Editing it belongs in its own PR.
+- `.claude/plans/constitution.md` — project guardrails. Two binding levels: **strict** for security-relevant choices (sanitizers, escapers, capability constants, forbidden constructs — never deviate without approval), **default** for dependencies (advisory; extend when needed and note why).
 - `.claude/plans/features/NNN-feature-slug/` — one dir per in-flight feature: `spec.md`, `plan.md`, `progress.md` (+ optional `findings.md`).
 - `.claude/plans/archive/` — shipped features, kept for long-term memory.
 

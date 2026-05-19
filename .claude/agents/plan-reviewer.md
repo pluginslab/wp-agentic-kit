@@ -23,7 +23,9 @@ Audit every file in the feature's plan dir (default: the most recently modified 
 - `plan.md` is missing or empty.
 - `spec.md` has no `## Out of scope` section. Anything not named there is undefined; the plan can't be reviewed.
 - `plan.md` has no `## Steps` section, or steps have no file paths. "Add validation" is not a step.
-- The plan references a library, sanitizer, escaper, or capability that is **not in the constitution's allowlist** — and there's no note explaining the constitution amendment.
+- `plan.md` has no `## Freeze assessment` section.
+- The freeze assessment recommends "proceed" but the plan demonstrably touches a freeze trigger (e.g. names a sanitizer/escaper/permission_callback in a step, or adds a dependency outside the constitution defaults, or modifies more than 3 files). The recommendation is dishonest; the plan must either be re-assessed or actually frozen.
+- The plan uses a sanitizer, escaper, capability constant, or otherwise-forbidden construct that is **not in the constitution's strict allowlist**. These are security-relevant; the plan must call out the amendment or pick an allowed alternative.
 
 ### High
 
@@ -34,6 +36,7 @@ Audit every file in the feature's plan dir (default: the most recently modified 
 
 ### Medium
 
+- The plan adds an npm or Composer dependency outside the constitution's **defaults**, and there's no note in `findings.md` explaining why. Defaults are advisory, not strict — but additions should leave a trail so future readers know the lib was a deliberate pick, not drift.
 - `## Why` in `spec.md` is missing or empty.
 - `plan.md` has no `## Risks / open questions` section.
 - A step has a `Why:` line that just restates the step title (comment rot in advance).
@@ -49,7 +52,9 @@ Audit every file in the feature's plan dir (default: the most recently modified 
 1. Locate the active feature plan dir. Default: the most recently modified `.claude/plans/features/*/` whose `progress.md` does not have `status: complete`. If the user names a specific feature slug, use that.
 2. Read `spec.md`, `plan.md`, `constitution.md`, and (if present) `findings.md`, `progress.md`.
 3. For each step in `plan.md`, verify the referenced file paths exist with `Glob` (or note they'll be created by an earlier step).
-4. Cross-check libraries / functions named in the plan against the constitution's allowlists with `Grep`.
+4. Cross-check the plan against the constitution:
+    - **Strict sections** (sanitizers, escapers, capability constants, forbidden constructs) — any deviation is Critical.
+    - **Default sections** (npm / Composer deps) — additions are Medium only if `findings.md` doesn't justify them; otherwise fine.
 5. Output a single report grouped by severity. If clean, say so explicitly.
 
 ## What you don't do

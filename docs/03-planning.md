@@ -32,31 +32,35 @@ Plus an optional fifth — `findings.md` — for research notes that surface mid
 
 Templates for each are in `.claude/references/PLANNING.md`. Long-form rationale is there too.
 
-## `constitution.md` — the allowlist
+## `constitution.md` — two binding levels
 
-Project-level. Written once at scaffold time by `wordpress-scaffold`, amended deliberately. The agent treats anything not on the list as "ask the user first."
+Project-level. Written once at scaffold time by `wordpress-scaffold`, amended deliberately. The file has two kinds of sections that bind the agent differently:
 
-The structural choice that matters: **whitelist, not prose.**
+**Strict sections** (`Allowed input sanitizers`, `Allowed output escapers`, `Allowed capability constants`, `Forbidden constructs`). Security-relevant. The agent must NOT deviate without explicit human approval, because the failure mode is a CVE.
 
-> Bad: "Use modern WordPress APIs and standard escape functions."
+**Default sections** (`Default npm dependencies`, `Default Composer dependencies`). Advisory. The agent reaches for these first; if a feature genuinely needs `clsx` or `date-fns`, it just uses the lib and notes the addition in the feature's `findings.md`. No PR ceremony for utility libraries.
+
+The distinction matters. Treating everything as strict makes the agent ask permission for trivia and slows the work to a crawl. Treating nothing as strict puts the plugin one missing escape away from disclosure.
+
+The structural choice for the strict sections: **enumerate, don't describe.**
+
+> Bad: "Use modern WordPress escape functions."
 >
 > Good:
 > ```markdown
-> ## Allowed npm dependencies
-> - @wordpress/scripts
-> - @wordpress/blocks
-> - @wordpress/block-editor
-> - @wordpress/components
-> - @wordpress/element
-> - @wordpress/i18n
-> - @wordpress/api-fetch
-> - @wordpress/hooks
-> - @wordpress/data
+> ## Allowed output escapers (strict)
+> - esc_html
+> - esc_attr
+> - esc_url
+> - esc_js
+> - wp_kses_post
+> - wp_kses
+> - esc_html__, esc_attr__, esc_html_e, esc_attr_e (translated)
 > ```
 
-Prose gets reinterpreted by the agent every time it's read. An enumerated list of seven exact package names cannot.
+Prose gets reinterpreted by the agent every time it's read. An enumerated list of exact function names cannot.
 
-Amending the constitution lives in its own commit, with the reason in the commit message. That makes drift auditable later.
+Amendments to the **strict** sections live in their own commit, with the reason in the commit message — that's how new capabilities or sanitizers get added without silently broadening the surface. Amendments to the **default** sections happen as needed and get a note in `findings.md`.
 
 ## `spec.md` — what + what not
 
@@ -115,11 +119,31 @@ This isn't a journal for humans. The `UserPromptSubmit` hook parses `last_comple
 
 The `Stop` hook auto-updates `last_updated` when the agent finishes a turn, so age reflects activity even when the agent forgets to write a log entry.
 
-## The plan freeze
+## The plan freeze (conditional)
 
-The structural commitment that makes this work in practice.
+The structural commitment that makes this work in practice — but not on every change.
 
-After `wordpress-feature` writes `spec.md` and `plan.md`, the skill stops. It runs `./scripts/open-plan-pr.sh NNN-feature-slug`, which commits the two plan files on a `plan/NNN-feature-slug` branch and opens a PR titled `plan: NNN-feature-slug` with the spec summary and plan approach pre-filled.
+`plan.md` ends with a **Freeze assessment** checklist. The agent fills it in honestly while writing the plan:
+
+```markdown
+## Freeze assessment
+
+- [ ] Touches security-relevant code (sanitizers, escapers, capabilities, REST permission callbacks, file uploads, raw queries)
+- [ ] Adds a new dependency outside the constitution's defaults
+- [ ] Modifies database schema
+- [ ] Changes the public API surface (REST routes, hook signatures, options keys)
+- [ ] Cross-cuts more than 3 files
+
+**Recommendation:** freeze | proceed in-session
+```
+
+Any one box checked → recommendation is **freeze**. The skill then runs `./scripts/open-plan-pr.sh NNN-feature-slug`, which commits `spec.md` + `plan.md` on a `plan/NNN-feature-slug` branch and opens a PR titled `plan: NNN-feature-slug`. Phase 3 (implementation) waits for the plan PR to merge.
+
+Zero boxes checked → recommendation is **proceed in-session**. The skill commits `plan.md` as the first commit of the `feat/NNN-feature-slug` branch, surfaces the assessment to the user for confirmation, and starts Phase 3 immediately. The plan still ships — it's just in the feature PR, not its own PR.
+
+A typo fix and a new REST endpoint shouldn't go through the same ceremony. The checklist makes the call explicit and reviewable. The `plan-reviewer` sub-agent verifies the assessment is honest: if a plan recommends "proceed" but names a permission callback in a step, that's flagged as Critical and the plan won't merge until re-assessed.
+
+Human override is always available either direction.
 
 > **GitHub assumption.** The script uses the `gh` CLI. For GitLab, Bitbucket, or local-only repos, replace the script with one that calls the equivalent (`glab mr create`, `bb pr create`, manual git push + PR via the host's web UI). The kit doesn't ship adapters — most WP shops are on GitHub, and the failure is loud (`gh: command not found`) if you're not.
 
@@ -155,7 +179,7 @@ Five separate pieces, each doing one thing. Together they keep the plan and the 
 - **Plans without file paths.** The agent will pick a file; it'll usually be wrong.
 - **`progress.md` as a journal.** It's a state file. Use `findings.md` for narrative.
 - **Editing `constitution.md` mid-feature without a commit.** Constitution changes belong in their own PR with their own reason.
-- **Skipping the plan freeze "just this once."** The 33% drift rate is the cost of "just this once." Pay it back later in confused code.
+- **Lying on the freeze assessment to skip the plan PR.** The checklist exists so the call is explicit. Marking the dependency box "no" because you "barely" added a library is exactly the drift the planning layer is meant to defend against. The plan-reviewer audit catches it.
 
 ## When NOT to plan
 
