@@ -75,4 +75,4 @@ Each MCP server contributes its tool list to the agent's context every turn. Fiv
 
 ---
 
-← [Skills](./03-skills.md) · Next: [Sub-agents →](./05-sub-agents.md)
+← [Skills](./04-skills.md) · Next: [Sub-agents →](./06-sub-agents.md)

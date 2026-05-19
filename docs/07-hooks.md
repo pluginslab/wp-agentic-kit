@@ -32,7 +32,7 @@ The hook receives a JSON payload on stdin describing the event (which tool fired
 - **stderr** — surfaced to the agent's context. Use this to explain a block or share findings.
 - **stdout JSON** — advanced control: `{"decision": "block", "reason": "..."}`.
 
-## The kit's two hooks
+## The kit's four hooks
 
 ### `post-edit.sh` (non-blocking)
 
@@ -56,6 +56,22 @@ If any one fails, `quality.sh` exits non-zero, the hook propagates the exit, and
 
 This is the safety net. Even if the agent "forgot" to run phpcs (because CLAUDE.md is advisory), the hook runs it.
 
+### `user-prompt-submit.sh` (non-blocking)
+
+Fires every time you submit a prompt. Scans `.claude/plans/features/*/progress.md`, finds the most recently modified active feature (status not `complete`), and emits a `<system-reminder>` with the plan's `last_completed`, `next_action`, and `blockers`. Stays silent when no feature is active.
+
+This is the load-bearing defense against plan drift: without it, the agent re-derives intent from the diff on every fresh session, and behavior wanders. With it, the agent re-anchors on its plan every turn. (Research published in 2025 measured a ~33% edit-without-prior-read rate in unattended sessions; this hook is the cheapest mitigation.)
+
+Cost: a few hundred tokens per turn when a plan is active. Zero otherwise.
+
+### `stop.sh` (non-blocking)
+
+Fires when the agent finishes a turn. Updates `last_updated:` in the active feature's `progress.md` to the current timestamp.
+
+Without this, `last_updated` only changes when the agent remembers to write to `progress.md` — which is exactly the failure mode the planning layer defends against. This hook closes the loop: file age now reflects real activity even when the agent forgets to log.
+
+Silent. Modifies at most one file per turn.
+
 ## Event reference
 
 | Event | When | Common use |
@@ -64,9 +80,9 @@ This is the safety net. Even if the agent "forgot" to run phpcs (because CLAUDE.
 | `PostToolUse` | After a tool | Lint edited files, log activity |
 | `Stop` | When the agent finishes a turn | Quality summary, push reminder |
 | `SubagentStop` | When a sub-agent finishes | Aggregate findings |
-| `UserPromptSubmit` | When you hit enter | Context injection |
+| `UserPromptSubmit` | When you hit enter | Plan injection (the kit uses this), context briefing |
 | `SessionStart` | New session | Status banner, project briefing |
-| `PreCompact` | Before context compaction | Save state to CHANGELOG.md |
+| `PreCompact` | Before context compaction | Save state to a planning file |
 | `Notification` | On notifications | Forward to Slack |
 
 ## What belongs in a hook (vs. CLAUDE.md, vs. a skill)
@@ -95,4 +111,4 @@ One script, three call sites, same gate everywhere.
 
 ---
 
-← [Sub-agents](./05-sub-agents.md) · Next: [Permissions →](./07-permissions.md)
+← [Sub-agents](./06-sub-agents.md) · Next: [Permissions →](./08-permissions.md)

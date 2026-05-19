@@ -67,8 +67,8 @@ If it doesn't, check that `.mcp.json` and `.claude/settings.json` weren't gitign
 
 You're sitting on a working harness for one plugin. The next chapters walk through what each piece does and how to evolve it.
 
-If you want to use the kit as an *overlay* on an existing plugin instead of as a starter, see [Permissions](./07-permissions.md) for which files to copy and which to merge.
+If you want to use the kit as an *overlay* on an existing plugin instead of as a starter, see [Permissions](./08-permissions.md) for which files to copy and which to merge.
 
 ---
 
-Next: [CLAUDE.md (Description) →](./02-claude-md.md)
+Next: [CLAUDE.md →](./02-claude-md.md)

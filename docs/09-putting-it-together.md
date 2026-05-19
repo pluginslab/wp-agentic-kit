@@ -8,7 +8,7 @@ Without the harness this is a half-day of context-switching: reading docs, copy-
 
 Here's how each piece earns its keep on this one feature.
 
-## 1 — Frame the work (Delegação)
+## 1 — Frame the work (Delegação + Descrição)
 
 You open a Claude Code session and say:
 
@@ -17,9 +17,23 @@ You open a Claude Code session and say:
   and a REST endpoint to fetch the status by order id. dynamic render.
 ```
 
-The main agent reads `CLAUDE.md` (so it knows the namespace, slug, conventions, security rules) and breaks the task into two: a block and an endpoint. It loads the `wp-rest-api` and `wp-block-development` skills from `.claude/skills/` — both pulled in from [WordPress/agent-skills](https://github.com/WordPress/agent-skills) at scaffold time — and works through them in sequence.
+The main agent reads `CLAUDE.md` (namespace, slug, conventions, security rules), notices a plugin already exists in the working directory, and invokes the `wordpress-feature` skill. The skill walks through its phases:
 
-## 2 — REST endpoint (Descrição via skill)
+- **Phase 0 — Context.** Reads `.claude/plans/constitution.md` to confirm `@wordpress/blocks`, `@wordpress/api-fetch`, and the rest of the needed packages are allowlisted. They are.
+- **Phase 1 — Spec.** Allocates `.claude/plans/features/003-order-status/` and writes `spec.md` — what's being built, why, acceptance bullets, an explicit `Out of scope` (no list view, no historical timeline, no notifications).
+- **Phase 2 — Plan.** Writes `plan.md` with phased steps: each one names the file paths it'll touch and the test it'll write first.
+
+## 2 — Plan freeze (Discernimento)
+
+The skill stops. It runs `./scripts/open-plan-pr.sh 003-order-status`, which commits `spec.md` and `plan.md` on a `plan/003-order-status` branch and opens a PR with the spec summary and plan approach pre-filled.
+
+The agent then dispatches the `plan-reviewer` sub-agent against the PR. Read-only audit: file paths in every step ✓, `Out of scope` present ✓, no library outside the constitution ✓, tests mentioned ✓. Clean.
+
+You review the plan PR on GitHub — five minutes, focused on whether the *approach* is right, not whether the syntax is. You merge it.
+
+Back in the terminal, the agent pulls `main` and starts Phase 3 on a new `feat/003-order-status` branch.
+
+## 3 — REST endpoint (Delegação via skill)
 
 Loading `wp-rest-api` gives the main agent the controller pattern, permission-callback rules, schema conventions. It:
 
@@ -29,18 +43,18 @@ Loading `wp-rest-api` gives the main agent the controller pattern, permission-ca
 - The `post-edit.sh` hook fires after each Write call. `phpcs` runs against the new file; one warning surfaces about a docblock format. The agent fixes it.
 - Reports back: route registered, two endpoints (`/orders/{id}/status` and the collection), curl smoke test passes.
 
-## 3 — Gutenberg block (Descrição via skill)
+## 4 — Gutenberg block (Delegação via skill)
 
 Loading `wp-block-development` gives the main agent Block API v3 conventions and `block.json` schema. It:
 
-- Reads `.claude/skills/wordpress-development/references/BLOCKS.md` for the kit's own layout conventions.
+- Reads `.claude/references/BLOCKS.md` for the kit's own layout conventions.
 - Asks: *"You said dynamic — confirm `render.php` instead of `save.js`?"* You confirm.
 - Generates `src/blocks/order-status/` with `block.json`, `index.js`, `edit.js`, `render.php`, `style.scss`, `editor.scss`.
 - Validates the produced block markup via the `wp-blockmarkup` MCP.
 - Runs `npm run build`, confirms output at `build/blocks/order-status/`.
 - Reports back: block registered via the existing auto-register loop, no PHP changes needed beyond the build.
 
-## 4 — Discernimento (the tests are the line)
+## 5 — Discernimento (the tests are the line)
 
 The main agent now wants to commit. Before the commit goes through:
 
@@ -49,7 +63,7 @@ The main agent now wants to commit. Before the commit goes through:
 
 If any of these had failed, the `pre-commit.sh` hook would block. The agent would see the failure on stderr and iterate.
 
-## 5 — Diligência (the safety net)
+## 6 — Diligência (the safety net)
 
 The agent runs:
 
@@ -68,13 +82,15 @@ The agent calls the `security-reviewer` sub-agent explicitly:
 
 Read-only sub-agent reads the diff. Reports two low-severity findings (a translation string missing the text domain, and a docblock typo). Both fixed in the same session. Re-run: clean.
 
-## 6 — Verify in WordPress (MCP)
+## 7 — Verify in WordPress (MCP)
 
 The agent uses the `wp-playground` MCP to spin up an ephemeral WordPress instance with the plugin installed. The `chrome-devtools` MCP opens it, navigates to a page with the block inserted, screenshots it, runs Lighthouse. Everything green.
 
-## 7 — Open the PR
+## 8 — Open the feature PR
 
-The agent uses the `github` MCP to push the branch and open a PR with a description summarising what was built and the verification steps it ran. You review the PR in the browser, merge.
+The agent uses the `github` MCP to push the `feat/003-order-status` branch and open a PR with a description summarising what was built, links back to the merged plan PR, and the verification steps it ran. You review, merge.
+
+After merge, the agent moves `.claude/plans/features/003-order-status/` to `.claude/plans/archive/2026-05-18-003-order-status/`. The plan is preserved as long-term agent memory; future features can reference it.
 
 ## The cost of skipping the harness
 
@@ -93,10 +109,10 @@ Each of those is small. They compound on every feature. The harness compounds th
 - Write a sub-agent that's specific to your codebase: a "release manager," a "migration script writer," whatever you do often.
 - Add an MCP for the integration you talk to weekly: Stripe, Mailchimp, your own internal API.
 - Promote rules from CLAUDE.md to hooks once they've become non-negotiable.
-- Start a `CHANGELOG.md` to track decisions across sessions.
+- Amend `.claude/plans/constitution.md` as your dependency set evolves — every amendment in its own commit, with the reason in the message.
 
 The harness is meant to evolve. The kit is the starting point.
 
 ---
 
-← [Permissions](./07-permissions.md) · [Back to walkthrough index](./README.md)
+← [Permissions](./08-permissions.md) · [Back to walkthrough index](./README.md)

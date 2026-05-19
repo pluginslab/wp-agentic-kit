@@ -38,19 +38,26 @@ Headless Chrome via DevTools Protocol. Use for visual checks on rendered blocks,
 
 ## Authentication
 
-Some servers need credentials. Add an `env` block in `.mcp.json`:
+Some servers need credentials. The kit ships the `env` block for `github` already wired in `.mcp.json` — you just need to export the matching variable in your shell:
+
+```bash
+# ~/.zshrc (or via direnv)
+export GITHUB_TOKEN="ghp_..."   # personal access token with the scopes you need
+```
+
+If `GITHUB_TOKEN` is unset, the github MCP starts in unauthenticated mode (public repos only). The kit never commits the token itself — only the indirection via `${GITHUB_TOKEN}`.
+
+For other MCPs that need credentials, add an `env` block following the same pattern:
 
 ```json
-"github": {
+"some-mcp": {
   "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-github"],
+  "args": ["-y", "some-mcp-package"],
   "env": {
-    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+    "SOME_API_KEY": "${SOME_API_KEY}"
   }
 }
 ```
-
-Export `GITHUB_TOKEN` in your shell (`~/.zshrc` or via direnv). Never commit the actual token.
 
 ## Adding more MCPs
 

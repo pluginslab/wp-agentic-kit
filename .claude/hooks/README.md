@@ -2,6 +2,10 @@
 
 Deterministic safety net. CLAUDE.md is advisory — it suggests good behaviour. Hooks always run. Anything that MUST happen on every commit, every edit, every session boundary belongs here, not in CLAUDE.md.
 
+## Maps to the talk's framework
+
+**Diligência.** Hooks are the diligence D made into infrastructure. The agent might forget to lint, might forget to update `progress.md`, might skip a quality gate because "this commit is small." Hooks remove the choice.
+
 ## Shipped hooks
 
 ### `post-edit.sh` — PostToolUse on Edit/Write/MultiEdit
@@ -17,6 +21,28 @@ Fires after the agent modifies a file. Reads `tool_input.file_path` from the hoo
 **Non-blocking.** Output goes to stderr where the agent reads it. The agent may still be mid-task; better to surface the issue and let it self-correct than to block a multi-step refactor halfway through.
 
 Lints only the file that just changed (not the whole working tree) — keeps the hook cheap when the agent does many edits in a single turn.
+
+### `user-prompt-submit.sh` — UserPromptSubmit
+
+Fires every time the user submits a prompt. Scans `.claude/plans/features/*/progress.md`, picks the most recently modified active feature (status not `complete`), and emits a `<system-reminder>` block on stdout with the active plan's `last_completed`, `next_action`, and `blockers`.
+
+**Silent when there's no active feature.** Cost is a few hundred tokens per turn when a plan is active, zero otherwise.
+
+This is the load-bearing memory for cross-session work: it forces the agent to re-anchor on the plan instead of editing-without-reading. (See research notes: ~33% edit-without-read rate observed in the wild without this kind of injection.)
+
+### `session-start.sh` — SessionStart (resume / compact / clear)
+
+Fires when a session resumes, compacts context, or is cleared. Prints a one-line banner naming the active feature and its next action, so you re-anchor before typing the next prompt. Silent when nothing's active.
+
+Registered with `matcher: "resume|compact|clear"` — per [issue #10373](https://github.com/anthropics/claude-code/issues/10373), `SessionStart` stdout is dropped for brand-new sessions, so the kit doesn't try to use it there. The `UserPromptSubmit` hook covers the new-session case once you type your first prompt.
+
+### `stop.sh` — Stop
+
+Fires when the agent finishes a turn. Updates `last_updated:` in the active feature's `progress.md` to the current timestamp.
+
+Without this, `last_updated` only changes when the agent remembers to write to `progress.md` — which is exactly the failure mode the planning layer defends against. This closes the loop: file age now reflects actual session activity, even when the agent forgets.
+
+Silent, never blocks. Modifies at most one file per turn.
 
 ### `pre-commit.sh` — PreToolUse on Bash
 
@@ -52,6 +78,16 @@ Hooks are registered in [`../settings.json`](../settings.json) under the `hooks`
     "PreToolUse": [
       { "matcher": "Bash",
         "hooks": [{ "type": "command", "command": ".claude/hooks/pre-commit.sh" }] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "command", "command": ".claude/hooks/user-prompt-submit.sh" }] }
+    ],
+    "Stop": [
+      { "hooks": [{ "type": "command", "command": ".claude/hooks/stop.sh" }] }
+    ],
+    "SessionStart": [
+      { "matcher": "resume|compact|clear",
+        "hooks": [{ "type": "command", "command": ".claude/hooks/session-start.sh" }] }
     ]
   }
 }

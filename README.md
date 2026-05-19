@@ -6,14 +6,16 @@ Companion to the talk **"A Nova Era do WordPress: De Developer a Arquiteto com E
 
 ## Why this exists
 
-Senior WordPress developers don't need to write boilerplate anymore. What we still need to do is design the system that writes it. This kit codifies that system:
+Senior WordPress developers don't need to write boilerplate anymore. What we still need to do is design the system that writes it. The talk frames that system in four D's; the kit makes each one concrete:
 
-- **CLAUDE.md / AGENTS.md** templates that tell the agent how WordPress projects work.
-- **Skills** for the recurring jobs: scaffold a plugin, add a block, review for security.
-- **MCP servers** curated for WordPress: docs, block markup, Playground, dev tools.
-- **Hooks** that enforce the boundaries the agent can't be trusted to remember.
+| Talk D | Kit piece | What it does |
+|---|---|---|
+| **Delegação** | [`.claude/skills/`](./.claude/skills/) | Interview-driven workflows (`wordpress-scaffold`, `wordpress-feature`) that hand structured work to the agent |
+| **Descrição** | [`.claude/plans/`](./.claude/plans/) + `CLAUDE.md` / `AGENTS.md` | Durable description the agent reads first — constitution, spec, plan, progress |
+| **Discernimento** | [`.claude/agents/`](./.claude/agents/) | Read-only sub-agents (`plan-reviewer`, `security-reviewer`) — independent judgement before sign-off |
+| **Diligência** | [`.claude/hooks/`](./.claude/hooks/) | Deterministic gates: pre-commit quality, post-edit lint, plan injection, progress timestamping |
 
-If the talk taught the four D's (Delegação, Descrição, Discernimento, Diligência), this repo is the Descrição layer made executable.
+Plus curated MCP servers and the scaffolding CLI that sets it all up in one command.
 
 ## What's in here
 
@@ -23,10 +25,14 @@ If the talk taught the four D's (Delegação, Descrição, Discernimento, Dilig�
 | 2 | [`AGENTS.md`](./AGENTS.md) | Cross-tool mirror (Codex, Cursor, Gemini CLI, Copilot, Windsurf) |
 | 3 | [`.claude/settings.json`](./.claude/) | Permissions and allowed commands |
 | 4 | [`.mcp.json`](./.mcp.json) + [`mcp/`](./mcp/) | MCP servers shipped via project-scoped config |
-| 5 | [`.claude/skills/`](./.claude/skills/) | Interview-driven plugin / feature scaffolder + the [WordPress/agent-skills](https://github.com/WordPress/agent-skills) library pulled fresh on scaffold |
-| 6 | [`.claude/agents/`](./.claude/agents/) | One sub-agent: `security-reviewer` (read-only audit). Block / REST work is covered by skills, not sub-agents. |
-| 7 | [`.claude/hooks/`](./.claude/hooks/) | Pre-commit gate (blocking) and post-edit lint (informational) |
-| 8 | [`docs/`](./docs/) | Eight-chapter walkthrough from zero to a fully configured harness |
+| 5 | [`.claude/skills/`](./.claude/skills/) | Two skills: `wordpress-scaffold` (greenfield plugin) and `wordpress-feature` (feature + maintenance). Each writes plan artifacts before generating code. Plus the [WordPress/agent-skills](https://github.com/WordPress/agent-skills) library pulled fresh on scaffold |
+| 6 | [`.claude/plans/`](./.claude/plans/) | Durable cross-session memory — `constitution.md` allowlists, per-feature `spec.md` / `plan.md` / `progress.md`, archived plans |
+| 7 | [`.claude/agents/`](./.claude/agents/) | Two read-only sub-agents: `plan-reviewer` (audits spec/plan) and `security-reviewer` (audits code). Block / REST work is covered by skills. |
+| 8 | [`.claude/hooks/`](./.claude/hooks/) | Pre-commit gate (blocking), post-edit lint, `UserPromptSubmit` plan injection, `Stop` progress timestamp, `SessionStart` orientation banner |
+| 9 | [`.claude/commands/`](./.claude/commands/) | Slash commands wrapping common operations — `/plan-freeze`, `/audit-plan`, `/ship-feature` |
+| 10 | [`scripts/`](./scripts/) | `quality.sh` — single source of truth for "what is quality"; `open-plan-pr.sh` — plan-freeze automation |
+| 11 | [`tests/`](./tests/) | Bash test suite for the kit's own hooks. Integrated into `quality.sh`. |
+| 12 | [`docs/`](./docs/) | Nine-chapter walkthrough from zero to a fully configured harness |
 
 ## Quick start
 
@@ -56,10 +62,13 @@ This kit is being built live alongside the talk. Each piece lands in its own com
 - [x] 2 — AGENTS.md
 - [x] 3 — settings.json
 - [x] 4 — MCP servers
-- [x] 5 — Skills
-- [x] 6 — Sub-agents
-- [x] 7 — Hooks
-- [x] 8 — Docs walkthrough
+- [x] 5 — Skills (scaffold + feature, with planning phases)
+- [x] 6 — Plans (constitution + per-feature spec/plan/progress)
+- [x] 7 — Sub-agents (plan-reviewer + security-reviewer)
+- [x] 8 — Hooks (pre-commit, post-edit, user-prompt-submit, stop)
+- [x] 9 — Scripts (quality.sh, open-plan-pr.sh)
+- [x] 10 — Tests (hook test suite, integrated into quality.sh)
+- [x] 11 — Docs walkthrough
 
 ## License
 

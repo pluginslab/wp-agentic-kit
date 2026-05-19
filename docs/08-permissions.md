@@ -88,4 +88,4 @@ Permissions stay project-scoped. Your existing plugin gets the kit's safety nets
 
 ---
 
-← [Hooks](./06-hooks.md) · Next: [Putting it together →](./08-putting-it-together.md)
+← [Hooks](./07-hooks.md) · Next: [Putting it together →](./09-putting-it-together.md)

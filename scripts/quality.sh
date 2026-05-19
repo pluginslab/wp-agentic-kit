@@ -42,6 +42,11 @@ if [[ -x "./vendor/bin/phpunit" ]]; then
   ./vendor/bin/phpunit >&2 || fail=1
 fi
 
+if [[ -x "./tests/run.sh" ]]; then
+  echo "  - tests/run.sh (kit harness)" >&2
+  ./tests/run.sh >&2 || fail=1
+fi
+
 if [[ $fail -ne 0 ]]; then
   echo "" >&2
   echo "Quality suite failed." >&2

@@ -107,7 +107,7 @@ pl-example/
 └── uninstall.php                 # cleanup on uninstall
 ```
 
-Deeper details: @.claude/skills/wordpress-development/SKILL.md
+Deeper details: @.claude/skills/wordpress-feature/SKILL.md (and @.claude/skills/wordpress-scaffold/SKILL.md for greenfield)
 
 ## Conventions
 
@@ -123,7 +123,7 @@ Deeper details: @.claude/skills/wordpress-development/SKILL.md
 
 ## Workflow
 
-- For a new feature, scaffold first with the `wordpress-development` skill, then implement.
+- For a new feature, invoke the `wordpress-feature` skill — it writes spec + plan, freezes for review, then implements.
 - Run the matching quality command after each change: `phpcs` for PHP, `npm run lint` for JS/CSS.
 - Prefer extending an existing class over adding a new one.
 - One concern per PR. Keep diffs small.
@@ -155,15 +155,31 @@ Deeper details: @.claude/skills/wordpress-development/SKILL.md
 <!-- WHY: naming the tools available makes the agent more likely to use
      them instead of falling back to web search or guessing. -->
 
+## Planning layer
+
+The agent's load-bearing memory across sessions lives under `.claude/plans/`:
+
+- `.claude/plans/constitution.md` — project allowlists (deps, sanitizers, escapers, caps). Editing it belongs in its own PR.
+- `.claude/plans/features/NNN-feature-slug/` — one dir per in-flight feature: `spec.md`, `plan.md`, `progress.md` (+ optional `findings.md`).
+- `.claude/plans/archive/` — shipped features, kept for long-term memory.
+
+The `UserPromptSubmit` hook surfaces the active feature's next step on every turn. New features always go through the `wordpress-feature` skill (greenfield plugins go through `wordpress-scaffold`), which writes the plan files before generating code.
+
+@.claude/plans/constitution.md
+
 ## References (load on demand)
 
-- @.claude/skills/wordpress-development/SKILL.md — the scaffold workflow
-- @.claude/skills/wordpress-development/references/SECURITY.md — full security checklist
-- @.claude/skills/wordpress-development/references/BLOCKS.md — Gutenberg patterns
+- @.claude/plans/README.md — planning layer overview
+- @.claude/skills/wordpress-scaffold/SKILL.md — greenfield plugin workflow
+- @.claude/skills/wordpress-feature/SKILL.md — feature + maintenance workflow
+- @.claude/references/PLANNING.md — plan-file templates and rationale
+- @.claude/references/SECURITY.md — full security checklist
+- @.claude/references/BLOCKS.md — Gutenberg patterns
 - WordPress Code Reference: https://developer.wordpress.org/reference/
 - WordPress Coding Standards: https://github.com/WordPress/WordPress-Coding-Standards
 
 ## Memory hygiene
 
 - When you catch yourself correcting me on the same mistake twice, append a rule above instead of re-explaining.
-- Track progress, decisions, and dead ends in `CHANGELOG.md`. That is the long-term memory across sessions.
+- Per-feature progress, decisions, and dead ends go in the feature's `.claude/plans/features/NNN-slug/progress.md` (live) and `findings.md` (research). Shipped features move to `.claude/plans/archive/` — that's the long-term agent memory.
+- `CHANGELOG.md` is for human-facing release notes only (one entry per version bump). Don't conflate it with agent memory.

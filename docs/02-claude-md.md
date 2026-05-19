@@ -42,12 +42,16 @@ In Claude Code, the `#` prefix in the chat captures a note straight to CLAUDE.md
 
 Quarterly: re-read the file. Cut rules that haven't been violated in months. Promote any rule that has become non-negotiable into a hook so the next person can't accidentally drop it.
 
-## CLAUDE.md vs. CHANGELOG.md
+## CLAUDE.md vs. plan files vs. CHANGELOG.md
 
-CLAUDE.md is *instructions*. CHANGELOG.md is *journal*: progress, decisions, dead ends. Anthropic's long-running-agent research recommends pairing the two — without a record of what failed and why, the next session re-attempts the same dead ends.
+Three files, three roles:
 
-The kit ships CLAUDE.md but not CHANGELOG.md; it's project-specific and starts the moment you make the first decision worth recording.
+- **`CLAUDE.md`** is *instructions* — what the agent must do, every session, regardless of feature. Security rules, naming, commands. Stable.
+- **`.claude/plans/features/NNN-slug/progress.md`** and **`findings.md`** are the per-feature *journal* — progress, decisions, dead ends. The agent reads them at session start via the `UserPromptSubmit` hook. Anthropic's long-running-agent research recommends pairing instructions with a journal — without a record of what failed and why, the next session re-attempts the same dead ends.
+- **`CHANGELOG.md`** is *release notes* — one entry per version, human-readable, public-facing. Not agent memory.
+
+The kit ships `CLAUDE.md` and the `.claude/plans/` scaffolding; `CHANGELOG.md` is project-specific and starts when you cut your first release.
 
 ---
 
-← [Getting started](./01-getting-started.md) · Next: [Skills →](./03-skills.md)
+← [Getting started](./01-getting-started.md) · Next: [Planning →](./03-planning.md)

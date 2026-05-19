@@ -17,6 +17,7 @@
       "Bash(./vendor/bin/phpunit:*)",
       "Bash(./vendor/bin/phpstan:*)",
       "Bash(./vendor/bin/psalm:*)",
+      "Bash(./tests/run.sh:*)",
       "mcp__wp-devdocs",
       "mcp__wp-blockmarkup",
       "mcp__wp-playground",
@@ -38,6 +39,28 @@
         "matcher": "Bash",
         "hooks": [
           { "type": "command", "command": ".claude/hooks/pre-commit.sh" }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/user-prompt-submit.sh" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/stop.sh" }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "resume|compact|clear",
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/session-start.sh" }
         ]
       }
     ]

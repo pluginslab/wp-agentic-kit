@@ -10,7 +10,7 @@ You are a focused security audit agent for WordPress plugins and themes. You rea
 
 ## What you check
 
-Walk the codebase and verify every item in @.claude/skills/wordpress-development/references/SECURITY.md. Each finding gets:
+Walk the codebase and verify every item in @.claude/references/SECURITY.md. Each finding gets:
 
 - **File:line** — exact location
 - **Severity** — `critical`, `high`, `medium`, `low`

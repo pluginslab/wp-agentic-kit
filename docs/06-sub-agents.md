@@ -8,19 +8,25 @@ Three reasons to spin up a sub-agent instead of doing the work in the main threa
 2. **Tool discipline** — restrict what the sub-agent can do. The security reviewer in this kit has no `Edit` or `Write`. It can't accidentally "fix" anything you didn't ask for.
 3. **Parallelism** — independent sub-agents run concurrently. Three reviews of the same diff in the time it takes for one.
 
-In the AI Fluency Framework, sub-agents make **Delegação** concrete: you don't just delegate a task, you delegate it to a specialist with bounded permissions.
+In the AI Fluency Framework, sub-agents make **Discernimento** concrete: independent judgement before a human signs off, with the tool restriction making "no, you can't fix it yourself" structurally enforced.
 
-## The kit's sub-agent
+## The kit's sub-agents
 
-The kit ships one. The bar for shipping more is high: a sub-agent has to do something a skill can't.
+The kit ships two — both read-only audits. The bar for shipping more is high: a sub-agent has to do something a skill can't.
+
+### `plan-reviewer`
+
+Read-only. Audits a feature's `spec.md` and `plan.md` against the conventions in `PLANNING.md` and the project's `constitution.md`. Reports findings with `file:line · severity · rule · suggested fix`. Invoked during Phase 2.5 (plan freeze) of `wordpress-feature`, after `scripts/open-plan-pr.sh` opens the plan PR and before a human signs off.
+
+Use it: after writing a plan, before requesting human review. It catches the mechanical misses (missing `Out of scope`, steps without file paths, a library that isn't in the constitution) so the human review can focus on intent and approach.
 
 ### `security-reviewer`
 
 Read-only. Audits PHP and JS against the project's `SECURITY.md` checklist. Reports findings with `file:line · severity · rule · suggested fix`. Never edits.
 
-Use it: before opening a PR, before tagging a release, after touching input handling.
+Use it: before opening a feature PR, before tagging a release, after touching input handling.
 
-The read-only restriction is the whole point. A skill could *describe* the audit; only a sub-agent with a restricted tool list can *enforce* that the audit doesn't turn into a drive-by refactor. That structural guarantee is what makes it worth the extra hop.
+The read-only restriction is the whole point of both. A skill could *describe* the audit; only a sub-agent with a restricted tool list can *enforce* that the audit doesn't turn into a drive-by refactor. That structural guarantee is what makes it worth the extra hop.
 
 ### Why not block-builder / rest-builder?
 
@@ -63,7 +69,7 @@ You can also let the main agent decide. The description in sub-agent frontmatter
 
 1. `.claude/agents/<name>.md` — frontmatter with `name`, `description`, `tools`.
 2. Body: a focused system prompt. One job, one playbook.
-3. Reference shared docs via `@.claude/skills/...` so sub-agents and the main agent share the same source of truth.
+3. Reference shared docs via `@.claude/references/...` so sub-agents and the main agent share the same source of truth.
 4. Decide on tool restrictions deliberately. Default to less.
 
 ## Sub-agents vs. skills
@@ -79,4 +85,4 @@ A skill is "how to do this workflow." A sub-agent is "a specialist who does this
 
 ---
 
-← [MCP servers](./04-mcp-servers.md) · Next: [Hooks →](./06-hooks.md)
+← [MCP servers](./05-mcp-servers.md) · Next: [Hooks →](./07-hooks.md)
