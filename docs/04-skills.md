@@ -99,6 +99,24 @@ Linking out via `@.claude/references/SECURITY.md` keeps the SKILL.md itself focu
 
 Treat skills like code. Version them via git, review changes, write commit messages explaining *why* the prompt changed. A skill is a small program; small programs deserve discipline.
 
+## Slash commands — skills' simpler cousin
+
+Skills are interview-driven workflows: mode detection, branching phases, conditional logic. **Slash commands** (`.claude/commands/<name>.md`) are one-step shortcuts: "always do exactly this sequence." When the user types `/<name>`, the command's body becomes the agent's marching orders for that turn.
+
+The kit ships three:
+
+| Command | What it wraps |
+|---|---|
+| `/plan-freeze [slug]` | Runs `scripts/open-plan-pr.sh` to commit `spec.md` + `plan.md` on a `plan/` branch and open a PR |
+| `/audit-plan [slug]` | Dispatches the `plan-reviewer` sub-agent against the active feature's plan |
+| `/ship-feature [slug]` | After the feature PR merges, marks `progress.md` complete and archives the dir |
+
+Each auto-detects the active feature when called without an argument.
+
+Use a command when the work is mechanical and the sequence is fixed. Use a skill when there are decisions to make along the way (interview, mode detection, conditional behavior). The same shipped script can power both — `/plan-freeze` is a thin wrapper over the same `scripts/open-plan-pr.sh` that `wordpress-feature` Phase 2.5 calls.
+
+Frontmatter is `description` (shown in the slash command picker) and optional `argument-hint`. The body uses `$ARGUMENTS` to substitute whatever the user typed after the command name. See `.claude/commands/README.md` for the conventions and the three shipped examples.
+
 ---
 
 ← [Planning](./03-planning.md) · Next: [MCP servers →](./05-mcp-servers.md)

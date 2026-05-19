@@ -32,7 +32,7 @@ The hook receives a JSON payload on stdin describing the event (which tool fired
 - **stderr** — surfaced to the agent's context. Use this to explain a block or share findings.
 - **stdout JSON** — advanced control: `{"decision": "block", "reason": "..."}`.
 
-## The kit's four hooks
+## The kit's five hooks
 
 ### `post-edit.sh` (non-blocking)
 
@@ -71,6 +71,23 @@ Fires when the agent finishes a turn. Updates `last_updated:` in the active feat
 Without this, `last_updated` only changes when the agent remembers to write to `progress.md` — which is exactly the failure mode the planning layer defends against. This hook closes the loop: file age now reflects real activity even when the agent forgets to log.
 
 Silent. Modifies at most one file per turn.
+
+### `session-start.sh` (non-blocking, matcher: `resume|compact|clear`)
+
+Fires when a session resumes, compacts context, or is cleared. Prints a one-line banner naming the active feature and its next action, so you re-anchor before typing the next prompt. Silent when nothing's active.
+
+The `matcher` is deliberate: per [Anthropic issue #10373](https://github.com/anthropics/claude-code/issues/10373), `SessionStart` stdout is dropped on brand-new sessions, so the kit doesn't try to use it there. The `user-prompt-submit.sh` hook covers the new-session case once you type your first prompt.
+
+## Testing the hooks
+
+Anything trustable should be testable. The kit ships a small bash test suite at `tests/` that exercises each hook with isolated sandboxes per case:
+
+```bash
+./tests/run.sh                # 56 cases across all five hooks
+./tests/run.sh hooks/test-stop.sh   # one hook
+```
+
+`scripts/quality.sh` runs the suite as one of its gates, so a failing hook test blocks commits via `pre-commit.sh`. Plain bash, no external deps. See `tests/README.md` for the conventions.
 
 ## Event reference
 
