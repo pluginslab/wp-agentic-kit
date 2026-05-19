@@ -1,6 +1,6 @@
 {
   "name": "create-wp-ai-plugin",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Scaffold a new WordPress plugin from wp-agentic-kit, configured for agentic engineering with Claude Code. Run via `npm create wp-ai-plugin <target>`.",
   "type": "module",
   "bin": {

@@ -29,3 +29,7 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Local CLI smoke tests (e.g. `npm create wp-ai-plugin demo-plugin`)
+demo-plugin/
+/tmp-scaffold/
