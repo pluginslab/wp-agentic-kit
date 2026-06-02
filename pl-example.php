@@ -27,6 +27,33 @@ define( 'PL_EXAMPLE_URL', plugin_dir_url( __FILE__ ) );
 require_once PL_EXAMPLE_PATH . 'vendor/autoload.php';
 
 /**
+ * Autoload the plugin's own classes from includes/ using WordPress-style
+ * filenames (PLExample\Api\Rest_Hello => includes/api/class-rest-hello.php).
+ *
+ * Composer's vendor autoloader (required above) handles third-party packages
+ * and an optimized classmap of existing files. This resolver covers the
+ * plugin's first-party classes and, unlike a classmap, finds new files the
+ * moment you add them — no `composer dump-autoload` step.
+ *
+ * @param string $class Fully-qualified class name being loaded.
+ */
+spl_autoload_register(
+	static function ( string $class ): void {
+		$prefix = 'PLExample\\';
+		if ( 0 !== strncmp( $class, $prefix, strlen( $prefix ) ) ) {
+			return;
+		}
+		$parts      = explode( '\\', substr( $class, strlen( $prefix ) ) );
+		$class_name = array_pop( $parts );
+		$subdir     = $parts ? strtolower( implode( '/', $parts ) ) . '/' : '';
+		$file       = PL_EXAMPLE_PATH . 'includes/' . $subdir . 'class-' . strtolower( str_replace( '_', '-', $class_name ) ) . '.php';
+		if ( is_readable( $file ) ) {
+			require_once $file;
+		}
+	}
+);
+
+/**
  * Bootstrap. Single instance, hooks wired here and nowhere else.
  */
 final class PL_Example_Plugin {

@@ -2,6 +2,12 @@
 
 The kit's evolution, kept for humans. Per-feature progress lives in `.claude/plans/`.
 
+## v1.0.2 — 2026-06-02
+
+### Fixed
+
+- **A freshly scaffolded plugin no longer fatals on activation.** The template's Composer autoload was PSR-4 (`PLExample\ => includes/`), which cannot resolve the kit's own WordPress-style `class-{name}.php` filenames — so every plugin class (starting with the example `Rest` controller) failed to load and the plugin died with `Class ... not found` the instant it was activated. None of the static gates caught it, because nothing in `quality.sh` boots WordPress; it only surfaced under a live wp-playground activation. Switched the plugin's own classes to a `classmap` autoload, plus a small WordPress-style `spl_autoload_register` in the main file that resolves `class-*.php` files — including new ones added mid-feature, with no `composer dump-autoload` step.
+
 ## v1.0.1 — 2026-06-02
 
 ### Fixed
