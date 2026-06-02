@@ -17,8 +17,11 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 delete_option( 'pl_example_options' );
 delete_site_option( 'pl_example_options' );
 
-// Transients seeded by the Utils helper.
+// Transients seeded by the Utils helper. A direct query is intentional here:
+// uninstall runs once, object caching is irrelevant, and core offers no API to
+// bulk-delete transients by prefix.
 global $wpdb;
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one-shot uninstall cleanup, see note above.
 $wpdb->query(
 	$wpdb->prepare(
 		"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
@@ -27,5 +30,5 @@ $wpdb->query(
 	)
 );
 
-// Scheduled cron events under the plugin's hook prefix would go here.
-// wp_clear_scheduled_hook( 'pl_example_cron_event' );
+// Scheduled cron events would be cleared here, e.g. via
+// wp_clear_scheduled_hook() under the plugin's hook prefix.

@@ -2,6 +2,14 @@
 
 The kit's evolution, kept for humans. Per-feature progress lives in `.claude/plans/`.
 
+## v1.0.1 — 2026-06-02
+
+### Fixed
+
+- **The quality gate now passes on a fresh scaffold.** `scripts/quality.sh` ran `phpcs --standard=WordPress`, which overrode the project `phpcs.xml.dist` and discarded its `<file>` list, so phpcs aborted with "must supply at least one file or directory" — and `pre-commit.sh` blocked the very first commit. It now runs `phpcs` against the project ruleset, gated on a `phpcs.xml(.dist)` being present.
+- **phpunit no longer fails an unconfigured scaffold.** The suite runs phpunit only when a `phpunit.xml(.dist)` exists. The example `WP_UnitTestCase` test needs the WordPress test harness (wp-env); until that's set up, phpunit stays benign instead of erroring out.
+- **Example template files are now WordPress-Coding-Standards clean** (36 phpcs violations → 0): added the missing class / function / parameter / member docblocks, switched to long array syntax, scoped a `phpcs:ignore` to the one-shot direct DB call in `uninstall.php`, and excluded the entry-point main file from the class-file-naming sniff. A freshly scaffolded plugin is green out of the box.
+
 ## v1.0.0 — 2026-05-19
 
 The first release that's structurally complete: every D of the talk's framework is wired into the kit, and every piece has its place.

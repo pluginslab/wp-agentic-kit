@@ -21,33 +21,43 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Example public, read-only REST controller. Safe to delete once you have
+ * real endpoints.
+ */
 final class Rest_Hello {
 
+	/**
+	 * Register the /hello route.
+	 */
 	public function register_routes(): void {
 		register_rest_route(
 			Rest::NAMESPACE,
 			'/hello',
-			[
+			array(
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_item' ],
+				'callback'            => array( $this, 'get_item' ),
 				'permission_callback' => '__return_true',
-				'args'                => [],
-				'schema'              => [ $this, 'get_response_schema' ],
-			]
+				'args'                => array(),
+				'schema'              => array( $this, 'get_response_schema' ),
+			)
 		);
 	}
 
 	/**
 	 * Build the hello payload. Trivially small — no user input, no DB, no
 	 * external calls. Anything more elaborate belongs in its own controller.
+	 *
+	 * @param WP_REST_Request $request The REST request (unused).
+	 * @return WP_REST_Response
 	 */
 	public function get_item( WP_REST_Request $request ): WP_REST_Response {
 		unset( $request );
 
-		$payload = [
+		$payload = array(
 			'message' => __( 'Hello, World!', 'pl-example' ),
 			'version' => Utils::version(),
-		];
+		);
 
 		return rest_ensure_response( $payload );
 	}
@@ -57,23 +67,23 @@ final class Rest_Hello {
 	 * `Test_REST_Hello::test_response_matches_schema` catch silent drift.
 	 */
 	public function get_response_schema(): array {
-		return [
+		return array(
 			'$schema'    => 'http://json-schema.org/draft-04/schema#',
 			'title'      => 'pl-example-hello',
 			'type'       => 'object',
-			'properties' => [
-				'message' => [
+			'properties' => array(
+				'message' => array(
 					'type'        => 'string',
 					'description' => __( 'A greeting.', 'pl-example' ),
-					'context'     => [ 'view' ],
-				],
-				'version' => [
+					'context'     => array( 'view' ),
+				),
+				'version' => array(
 					'type'        => 'string',
 					'description' => __( 'The installed plugin version.', 'pl-example' ),
-					'context'     => [ 'view' ],
-				],
-			],
-			'required'   => [ 'message', 'version' ],
-		];
+					'context'     => array( 'view' ),
+				),
+			),
+			'required'   => array( 'message', 'version' ),
+		);
 	}
 }

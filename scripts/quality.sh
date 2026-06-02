@@ -17,9 +17,12 @@ echo "Quality suite running..." >&2
 
 fail=0
 
-if [[ -x "./vendor/bin/phpcs" ]]; then
+if [[ -x "./vendor/bin/phpcs" && ( -f phpcs.xml || -f phpcs.xml.dist ) ]]; then
   echo "  - phpcs" >&2
-  ./vendor/bin/phpcs --standard=WordPress >&2 || fail=1
+  # No --standard here: the project phpcs.xml.dist already sets the standard
+  # and the files to scan. Passing --standard would override it and drop the
+  # ruleset's <file> list ("must supply at least one file or directory").
+  ./vendor/bin/phpcs >&2 || fail=1
 fi
 
 if [[ -x "./vendor/bin/phpstan" ]]; then
@@ -37,7 +40,10 @@ if [[ -x "./node_modules/.bin/stylelint" && -d "src" ]]; then
   ./node_modules/.bin/stylelint "src/**/*.{css,scss}" >&2 || fail=1
 fi
 
-if [[ -x "./vendor/bin/phpunit" ]]; then
+# phpunit runs only once a config exists. The example test uses WP_UnitTestCase,
+# which needs the WordPress test harness (wp-env). Until you add phpunit.xml(.dist)
+# and that harness, this stays benign on a fresh scaffold instead of erroring.
+if [[ -x "./vendor/bin/phpunit" && ( -f phpunit.xml || -f phpunit.xml.dist ) ]]; then
   echo "  - phpunit" >&2
   ./vendor/bin/phpunit >&2 || fail=1
 fi

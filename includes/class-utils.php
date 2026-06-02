@@ -11,6 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Generic, reusable helpers. No business logic lives here.
+ */
 final class Utils {
 
 	/**

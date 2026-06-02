@@ -31,8 +31,18 @@ require_once PL_EXAMPLE_PATH . 'vendor/autoload.php';
  */
 final class PL_Example_Plugin {
 
+	/**
+	 * The single shared instance.
+	 *
+	 * @var self|null
+	 */
 	private static ?self $instance = null;
 
+	/**
+	 * Return the shared instance, creating it on first call.
+	 *
+	 * @return self
+	 */
 	public static function get_instance(): self {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -40,16 +50,22 @@ final class PL_Example_Plugin {
 		return self::$instance;
 	}
 
+	/**
+	 * Wire the plugin's hooks. The only place hooks are registered.
+	 */
 	private function __construct() {
-		add_action( 'init', [ $this, 'load_textdomain' ] );
+		add_action( 'init', array( $this, 'load_textdomain' ) );
 		( new PLExample\Api\Rest() )->register();
 	}
 
+	/**
+	 * Load the plugin text domain for translations.
+	 */
 	public function load_textdomain(): void {
 		load_plugin_textdomain( 'pl-example', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 }
 
-register_activation_hook( __FILE__, [ 'PL_Example_Plugin', 'get_instance' ] );
+register_activation_hook( __FILE__, array( 'PL_Example_Plugin', 'get_instance' ) );
 
-add_action( 'plugins_loaded', [ 'PL_Example_Plugin', 'get_instance' ] );
+add_action( 'plugins_loaded', array( 'PL_Example_Plugin', 'get_instance' ) );
