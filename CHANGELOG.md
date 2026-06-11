@@ -2,6 +2,21 @@
 
 The kit's evolution, kept for humans. Per-feature progress lives in `.claude/plans/`.
 
+## v1.0.3 — 2026-06-11
+
+### Added
+
+- **`DataForm` reference for React admin settings pages** (`.claude/references/DATAFORM.md`). `@wordpress/dataviews`' `DataForm` / `DataViews` is the direction WordPress core is taking for admin UI, so the kit now offers it as a forward-looking option alongside the PHP Settings API — with a decision table for which to reach for. Covers the `@wordpress/dataviews/wp` import path required under `wp-scripts`, registering the plugin's one option as a REST-exposed schema (`show_in_rest` + `additionalProperties => false`), enqueuing via the generated `index.asset.php`, mounting the React app, and the `fields` / `form` config shape. Critically it supplies the **security layer the upstream WordPress.org tutorial omits**: double capability gating, schema-as-validation, a `sanitize_callback` for defense in depth, and why the REST nonce authenticates but does not authorise.
+- **`@wordpress/dataviews` added to the constitution's default npm dependencies**, flagged pre-1.0 — import from `/wp`, pin the version, re-check the API on upgrade.
+
+### Changed
+
+- `CLAUDE.md`'s load-on-demand references now list `DATAFORM.md` alongside `BLOCKS.md`.
+
+### Fixed
+
+- **Quality gate is green again.** The v1.0.2 autoloader closure named its parameter `$class`, which a newer WPCS sniff (`Universal.NamingConventions.NoReservedKeywordParameterNames`) flags as a reserved keyword — turning `scripts/quality.sh` red. Renamed it to `$fqcn`. No behaviour change.
+
 ## v1.0.2 — 2026-06-02
 
 ### Fixed

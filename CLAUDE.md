@@ -175,6 +175,7 @@ The `UserPromptSubmit` hook surfaces the active feature's next step on every tur
 - @.claude/references/PLANNING.md — plan-file templates and rationale
 - @.claude/references/SECURITY.md — full security checklist
 - @.claude/references/BLOCKS.md — Gutenberg patterns
+- @.claude/references/DATAFORM.md — React admin settings pages via `@wordpress/dataviews` `DataForm`
 - WordPress Code Reference: https://developer.wordpress.org/reference/
 - WordPress Coding Standards: https://github.com/WordPress/WordPress-Coding-Standards
 

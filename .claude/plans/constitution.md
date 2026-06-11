@@ -31,6 +31,7 @@ The packages we expect to reach for. If a feature genuinely needs something else
 - `@wordpress/blocks`, `@wordpress/block-editor`, `@wordpress/components`
 - `@wordpress/element`, `@wordpress/i18n`, `@wordpress/api-fetch`
 - `@wordpress/hooks`, `@wordpress/data`
+- `@wordpress/dataviews` — `DataForm` / `DataViews` for admin settings + list UIs. Import from `@wordpress/dataviews/wp` under `wp-scripts` so dependencies resolve. Pre-1.0 and still stabilising — pin the version and re-check the API on upgrade. See @.claude/references/DATAFORM.md.
 
 ## Default Composer dependencies
 

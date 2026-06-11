@@ -35,15 +35,15 @@ require_once PL_EXAMPLE_PATH . 'vendor/autoload.php';
  * plugin's first-party classes and, unlike a classmap, finds new files the
  * moment you add them — no `composer dump-autoload` step.
  *
- * @param string $class Fully-qualified class name being loaded.
+ * @param string $fqcn Fully-qualified class name being loaded.
  */
 spl_autoload_register(
-	static function ( string $class ): void {
+	static function ( string $fqcn ): void {
 		$prefix = 'PLExample\\';
-		if ( 0 !== strncmp( $class, $prefix, strlen( $prefix ) ) ) {
+		if ( 0 !== strncmp( $fqcn, $prefix, strlen( $prefix ) ) ) {
 			return;
 		}
-		$parts      = explode( '\\', substr( $class, strlen( $prefix ) ) );
+		$parts      = explode( '\\', substr( $fqcn, strlen( $prefix ) ) );
 		$class_name = array_pop( $parts );
 		$subdir     = $parts ? strtolower( implode( '/', $parts ) ) . '/' : '';
 		$file       = PL_EXAMPLE_PATH . 'includes/' . $subdir . 'class-' . strtolower( str_replace( '_', '-', $class_name ) ) . '.php';
