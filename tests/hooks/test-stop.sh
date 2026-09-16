@@ -77,8 +77,13 @@ sed -i.bak 's/^last_updated:.*/last_updated: 1999-01-01 00:00/' \
   .claude/plans/features/001-old/progress.md \
   .claude/plans/features/002-newer/progress.md
 rm -f .claude/plans/features/001-old/progress.md.bak .claude/plans/features/002-newer/progress.md.bak
-# Touch 002-newer to make it the newest mtime again (sed changed both).
-touch .claude/plans/features/002-newer/progress.md
+# sed rewrote both files, so their mtimes are now equal to the second, and
+# mtime resolution here is whole seconds. Touching 002-newer did not reliably
+# break the tie — it only won a sub-second race, which macOS happened to win
+# and Linux consistently lost. Push 001-old firmly into the past instead, so
+# the ordering is unambiguous on any platform. `touch -t` is portable across
+# BSD and GNU; `touch -d` is not.
+touch -t 199901010000 .claude/plans/features/001-old/progress.md
 run_hook "stop.sh"
 assert_file_contains "multi-feature → newer touched" \
   .claude/plans/features/002-newer/progress.md "last_updated: $(date +%Y)"
