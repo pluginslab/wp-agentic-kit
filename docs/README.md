@@ -9,7 +9,7 @@ The kit's narrative companion. Read these in order if you've never set up an age
 3. [Planning](./03-planning.md) — constitution, spec, plan, progress — the durable memory across sessions
 4. [Skills](./04-skills.md) — naming the workflows you reach for repeatedly (`wordpress-scaffold`, `wordpress-feature`)
 5. [MCP servers](./05-mcp-servers.md) — connecting WordPress, the browser, GitHub, and beyond
-6. [Sub-agents](./06-sub-agents.md) — delegation with context isolation and tool discipline (`plan-reviewer`, `security-reviewer`)
+6. [Sub-agents](./06-sub-agents.md) — delegation with context isolation and tool discipline (`plan-reviewer`, `security-reviewer`, `playground-verifier`)
 7. [Hooks](./07-hooks.md) — the deterministic safety net
 8. [Permissions](./08-permissions.md) — what the agent can do without asking
 9. [Putting it together](./09-putting-it-together.md) — one feature end-to-end through the harness
@@ -22,7 +22,7 @@ Each piece of the kit maps to one of the four D's of the [AI Fluency Framework](
 |---|---|---|
 | **Delegação** | `.claude/skills/` (`wordpress-scaffold`, `wordpress-feature`) | 4 |
 | **Descrição** | `CLAUDE.md`, `AGENTS.md`, `.claude/plans/` (constitution, spec, plan, progress) | 2, 3 |
-| **Discernimento** | `.claude/agents/` (`plan-reviewer`, `security-reviewer`) | 6 |
+| **Discernimento** | `.claude/agents/` (`plan-reviewer`, `security-reviewer`, `playground-verifier`) | 6 |
 | **Diligência** | `.claude/hooks/` (pre-commit, post-edit, user-prompt-submit, stop) | 7 |
 
 The harness is what makes the four D's tractable on a real project. Without it, you keep re-explaining; with it, your conventions persist and your safety nets are inescapable.

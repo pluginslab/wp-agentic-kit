@@ -10,7 +10,7 @@ Sub-agents the main Claude Code agent can delegate to. Each one runs in its own 
 
 The kit's bar for shipping a sub-agent: it has to do something a skill can't. In practice that means either **tool restriction** (the sub-agent literally can't call `Edit` / `Write`) or **context isolation** for work that would otherwise dump thousands of lines into the main agent's window.
 
-A "specialist who writes blocks" or "specialist who writes REST endpoints" doesn't clear that bar — it's a skill in disguise. So the kit ships exactly two sub-agents, both read-only audits.
+A "specialist who writes blocks" or "specialist who writes REST endpoints" doesn't clear that bar — it's a skill in disguise. Nor does "a planning agent" or "a coding agent": planning is already a skill, and a coding agent needs the main thread's context and hands back a diff rather than a conclusion. So the kit ships three sub-agents, all read-only, each covering one thing the main agent can't do safely or cheaply in its own window.
 
 ## Shipped sub-agents
 
@@ -18,6 +18,11 @@ A "specialist who writes blocks" or "specialist who writes REST endpoints" doesn
 |---|---|---|
 | [`plan-reviewer`](./plan-reviewer.md) | Read, Grep, Glob, Bash | During Phase 2.5 of `wordpress-feature`, after `scripts/open-plan-pr.sh` opens the plan PR. Audits spec + plan against PLANNING.md and the constitution. |
 | [`security-reviewer`](./security-reviewer.md) | Read, Grep, Glob, Bash | Before merging a feature PR, before a release, after any change to input handling. |
+| [`playground-verifier`](./playground-verifier.md) | Read, Grep, Glob, Bash, `wp-playground` MCP | Before merging a feature PR, and right after a scaffold. Boots the plugin in a real WordPress instance and verifies it activates, serves its routes, and uninstalls cleanly. |
+
+The three map onto what can go wrong at three different times: the plan is wrong (`plan-reviewer`), the code is unsafe (`security-reviewer`), or the code is fine on paper and broken in practice (`playground-verifier`). The last one is the only gate in the kit that boots WordPress — everything else, `quality.sh` included, is static.
+
+`security-reviewer` and `playground-verifier` read the same diff and don't depend on each other, so dispatch them in the same message and let them run concurrently.
 
 Block and REST work is handled by the `wp-block-development` and `wp-rest-api` skills the kit pulls from [WordPress/agent-skills](https://github.com/WordPress/agent-skills) into `.claude/skills/` — those run on the main agent's context, no handoff needed.
 

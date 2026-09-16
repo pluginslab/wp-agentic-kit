@@ -30,7 +30,7 @@ Scaffolds a brand-new WordPress plugin through a short interview. **Greenfield o
 
 5. **Generate.** Standard plugin layout: `{slug}.php` (bootstrap with header, `*_VERSION`/`*_PATH`/`*_URL`/`*_FILE` constants, single `get_instance()` class, top-level activation/deactivation hooks), `includes/class-utils.php`, `includes/class-settings.php` (if selected), `includes/api/class-rest.php` + `class-rest-example.php` (if selected), `src/blocks/test-block/` (if selected), `src/extensions/` (if selected), `languages/`, `package.json` (if blocks/extensions), `composer.json`, `phpcs.xml.dist`, `readme.txt`, `uninstall.php`, `.gitignore`. Every PHP file MUST start with the `ABSPATH` guard.
 
-6. **Deliver.** Show the file tree. Print the three install commands (`composer install`, `npm install` if blocks/extensions, `npm run build` if blocks/extensions). Write `progress.md` with `status: complete, last_completed: scaffold` and immediately move `features/000-initial-scaffold/` to `.claude/plans/archive/{YYYY-MM-DD}-000-initial-scaffold/`. Offer to spin up `wp-playground` for a smoke test. Tell the user: **next features go through `wordpress-feature`.**
+6. **Deliver.** Show the file tree. Print the three install commands (`composer install`, `npm install` if blocks/extensions, `npm run build` if blocks/extensions). Write `progress.md` with `status: complete, last_completed: scaffold` and immediately move `features/000-initial-scaffold/` to `.claude/plans/archive/{YYYY-MM-DD}-000-initial-scaffold/`. Then dispatch `playground-verifier` — a scaffold that doesn't activate is worse than no scaffold, and nothing static catches it. Tell the user: **next features go through `wordpress-feature`.**
 
 ## Hard rules (this skill)
 
@@ -45,7 +45,7 @@ Every PHP file MUST start with `if ( ! defined( 'ABSPATH' ) ) { exit; }`. Every 
 
 ## After generation
 
-Remind the user to run `./vendor/bin/phpcs`, verify activation → deactivation → uninstall leaves no orphan data, commit `composer.lock` + `package-lock.json`, and run `security-reviewer` before the first PR.
+Remind the user to run `./vendor/bin/phpcs`, commit `composer.lock` + `package-lock.json`, and run `security-reviewer` before the first PR. The activation → deactivation → uninstall cycle is `playground-verifier`'s job — dispatch it rather than asking the user to check by hand.
 
 ## References
 
