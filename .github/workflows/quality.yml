@@ -1,0 +1,63 @@
+name: Quality
+
+# The kit's own gate. `scripts/quality.sh` is the single source of truth for
+# "what is quality" — the same script the pre-commit hook and a local run
+# invoke — so CI deliberately calls it rather than re-listing the checks here.
+# A check that exists only in CI is a check that surprises you on a PR.
+#
+# What this cannot do: boot WordPress. The `playground-verifier` sub-agent is
+# the kit's runtime gate, and it needs an agent harness plus the wp-playground
+# MCP server, neither of which exists in a GitHub runner. Static analysis is
+# the floor here, not the ceiling — dispatch the verifier before merging
+# anything that touches the plugin template.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Read-only. This workflow inspects the tree; it never writes to the repo.
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality.sh
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 8.2 is the version the plugin template's header declares
+      # (`Requires PHP: 8.2`). Gate on the minimum you claim to support, not on
+      # whatever the runner ships — the same reasoning playground-verifier
+      # applies when it boots at the declared minimum rather than at latest.
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-php8.2-${{ hashFiles('composer.json') }}
+          restore-keys: composer-${{ runner.os }}-php8.2-
+
+      # No composer.lock is committed, so this resolves fresh. That is the
+      # point: it catches an upstream release breaking the scaffold before a
+      # user hits it on `composer install` after `npm create wp-ai-plugin`.
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      # phpcs + the kit's own bash test suite. Every other check inside
+      # quality.sh is gated on its tool being present, so this stays correct
+      # as the kit grows a JS build or a phpunit config.
+      - name: Run quality suite
+        run: ./scripts/quality.sh
