@@ -97,9 +97,21 @@ function deriveIdentity(pluginName, vendorPrefix) {
 		.filter(Boolean)
 		.map(s => s[0].toUpperCase() + s.slice(1))
 		.join('');
+	// Underscore-separated PascalCase, WordPress's convention for global class
+	// names: `acme-order-tracker` => `Acme_Order_Tracker`. The template's
+	// bootstrap class (`PL_Example_Plugin`) uses this form, and it matches none
+	// of the other four patterns — it is not the ALL_CAPS constant prefix, the
+	// squashed namespace, or either lowercase form. Miss it and every scaffolded
+	// plugin ships a class literally called `PL_Example_Plugin`, which collides
+	// the moment two kit-scaffolded plugins are active on the same site.
+	const classPrefix = slug.split('-')
+		.filter(Boolean)
+		.map(s => s[0].toUpperCase() + s.slice(1))
+		.join('_');
 	return {
 		slug,
 		namespace,
+		classPrefix,
 		constPrefix: slug.toUpperCase().replace(/-/g, '_'),
 		fnPrefix: slug.replace(/-/g, '_'),
 	};
@@ -120,8 +132,12 @@ async function fetchAndExtract(ref, targetDir) {
 async function substitute(targetDir, ctx) {
 	let count = 0;
 	const replacements = [
-		// Order matters: longer / more specific keys first.
+		// Order matters: longer / more specific keys first. All five are
+		// case-sensitive and mutually disjoint — `PL_EXAMPLE` does not match
+		// `PL_Example`, and neither matches `PLExample`. Every casing the
+		// template uses needs its own entry here or it ships verbatim.
 		['PL_EXAMPLE', ctx.constPrefix],
+		['PL_Example', ctx.classPrefix],
 		['PLExample', ctx.namespace],
 		['pl_example', ctx.fnPrefix],
 		['pl-example', ctx.slug],
