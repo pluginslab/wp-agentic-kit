@@ -24,16 +24,29 @@ define( 'PL_EXAMPLE_FILE', __FILE__ );
 define( 'PL_EXAMPLE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PL_EXAMPLE_URL', plugin_dir_url( __FILE__ ) );
 
-require_once PL_EXAMPLE_PATH . 'vendor/autoload.php';
+/*
+ * Composer's autoloader covers third-party packages only — the plugin's own
+ * classes are resolved below, without it. Guarded because `vendor/` is
+ * gitignored: a git-based deploy installs the repo as cloned, and an
+ * unconditional require fatals on activation before anything else runs.
+ *
+ * If you add a package to `require` (not `require-dev`), make
+ * `composer install --no-dev` part of your deploy lane. This guard keeps the
+ * plugin from fataling; it can't conjure a dependency that isn't there.
+ */
+if ( is_readable( PL_EXAMPLE_PATH . 'vendor/autoload.php' ) ) {
+	require_once PL_EXAMPLE_PATH . 'vendor/autoload.php';
+}
 
 /**
  * Autoload the plugin's own classes from includes/ using WordPress-style
  * filenames (PLExample\Api\Rest_Hello => includes/api/class-rest-hello.php).
  *
- * Composer's vendor autoloader (required above) handles third-party packages
- * and an optimized classmap of existing files. This resolver covers the
- * plugin's first-party classes and, unlike a classmap, finds new files the
- * moment you add them — no `composer dump-autoload` step.
+ * This is the only autoloader for the plugin's own classes. `composer.json`
+ * deliberately declares no `autoload` section: a classmap covering the same
+ * files would register first and mask any bug in this resolver until someone
+ * added a class and forgot to re-dump. One loader, always exercised. It also
+ * finds new files the moment you add them — no `composer dump-autoload` step.
  *
  * @param string $fqcn Fully-qualified class name being loaded.
  */
