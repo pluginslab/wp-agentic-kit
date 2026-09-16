@@ -12,7 +12,7 @@ Senior WordPress developers don't need to write boilerplate anymore. What we sti
 |---|---|---|
 | **Delegação** | [`.claude/skills/`](./.claude/skills/) | Interview-driven workflows (`wordpress-scaffold`, `wordpress-feature`) that hand structured work to the agent |
 | **Descrição** | [`.claude/plans/`](./.claude/plans/) + `CLAUDE.md` / `AGENTS.md` | Durable description the agent reads first — constitution, spec, plan, progress |
-| **Discernimento** | [`.claude/agents/`](./.claude/agents/) | Read-only sub-agents (`plan-reviewer`, `security-reviewer`) — independent judgement before sign-off |
+| **Discernimento** | [`.claude/agents/`](./.claude/agents/) | Read-only sub-agents (`plan-reviewer`, `security-reviewer`, `playground-verifier`) — independent judgement before sign-off |
 | **Diligência** | [`.claude/hooks/`](./.claude/hooks/) | Deterministic gates: pre-commit quality, post-edit lint, plan injection, progress timestamping |
 
 Plus curated MCP servers and the scaffolding CLI that sets it all up in one command.
@@ -27,11 +27,11 @@ Plus curated MCP servers and the scaffolding CLI that sets it all up in one comm
 | 4 | [`.mcp.json`](./.mcp.json) + [`mcp/`](./mcp/) | MCP servers shipped via project-scoped config |
 | 5 | [`.claude/skills/`](./.claude/skills/) | Two skills: `wordpress-scaffold` (greenfield plugin) and `wordpress-feature` (feature + maintenance). Each writes plan artifacts before generating code. Plus the [WordPress/agent-skills](https://github.com/WordPress/agent-skills) library pulled fresh on scaffold |
 | 6 | [`.claude/plans/`](./.claude/plans/) | Durable cross-session memory — `constitution.md` (strict for security, default for dependencies), per-feature `spec.md` / `plan.md` / `progress.md`, archived plans |
-| 7 | [`.claude/agents/`](./.claude/agents/) | Two read-only sub-agents: `plan-reviewer` (audits spec/plan) and `security-reviewer` (audits code). Block / REST work is covered by skills. |
+| 7 | [`.claude/agents/`](./.claude/agents/) | Three read-only sub-agents: `plan-reviewer` (audits spec/plan), `security-reviewer` (audits code), `playground-verifier` (boots the plugin in real WordPress and checks it actually runs). Block / REST work is covered by skills. |
 | 8 | [`.claude/hooks/`](./.claude/hooks/) | Pre-commit gate (blocking), post-edit lint, `UserPromptSubmit` plan injection, `Stop` progress timestamp, `SessionStart` orientation banner |
 | 9 | [`.claude/commands/`](./.claude/commands/) | Slash commands wrapping common operations — `/plan-freeze`, `/audit-plan`, `/ship-feature` |
 | 10 | [`scripts/`](./scripts/) | `quality.sh` — single source of truth for "what is quality"; `open-plan-pr.sh` — plan-freeze automation |
-| 11 | [`tests/`](./tests/) | Bash test suite for the kit's own hooks. Integrated into `quality.sh`. |
+| 11 | [`tests/`](./tests/) | Bash test suite for the kit's own hooks and sub-agent contracts. Integrated into `quality.sh`. |
 | 12 | [`docs/`](./docs/) | Nine-chapter walkthrough from zero to a fully configured harness |
 
 ## Quick start

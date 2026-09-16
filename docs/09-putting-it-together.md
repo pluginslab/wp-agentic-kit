@@ -74,17 +74,23 @@ git commit -m "feat: order-status block + REST endpoint"
 
 The `pre-commit.sh` hook fires. The full quality suite runs again from scratch (defense in depth — the post-edit lint was on individual files; this one runs the whole project). Passes. Commit goes through.
 
-The agent calls the `security-reviewer` sub-agent explicitly:
+The agent dispatches both review sub-agents in one message, so they run concurrently against the same diff:
 
 ```
-> have security-reviewer audit the changes
+> have security-reviewer and playground-verifier check the changes
 ```
 
-Read-only sub-agent reads the diff. Reports two low-severity findings (a translation string missing the text domain, and a docblock typo). Both fixed in the same session. Re-run: clean.
+`security-reviewer` reads the diff. Reports two low-severity findings (a translation string missing the text domain, and a docblock typo). Both fixed in the same session. Re-run: clean.
 
-## 7 — Verify in WordPress (MCP)
+## 7 — Verify it actually runs
 
-The agent uses the `wp-playground` MCP to spin up an ephemeral WordPress instance with the plugin installed. The `chrome-devtools` MCP opens it, navigates to a page with the block inserted, screenshots it, runs Lighthouse. Everything green.
+Meanwhile `playground-verifier` has been doing something no static gate can: running the plugin.
+
+It reads `Requires at least: 6.7` and `Requires PHP: 8.2` from the plugin header and boots Playground at exactly those versions — not at latest, because a plugin that claims 6.7 and calls a 6.8 function only fails on 6.7. It mounts the working tree, activates, and reads the error log. Then it confirms the new REST route resolves at runtime rather than just appearing in the source, checks the route rejects an unauthenticated write, deactivates, uninstalls, and verifies the plugin's option is gone.
+
+This run comes back clean. The run that justified building it did not: kit v1.0.2 fixed a scaffold that fataled the moment you activated it, having passed phpcs, passed the security review, and shipped twice. Static analysis proves the code is well-formed. Only running it proves it works.
+
+With both reports in, the `chrome-devtools` MCP opens the live instance, navigates to a page with the block inserted, screenshots it, runs Lighthouse. Everything green.
 
 ## 8 — Open the feature PR
 
