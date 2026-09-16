@@ -14,23 +14,13 @@ set -uo pipefail
 plans_dir=".claude/plans/features"
 [[ ! -d "$plans_dir" ]] && exit 0
 
-# Find the most recently modified progress.md under features/ that is not
-# marked status: complete. Plan dirs that have shipped get moved to
-# .claude/plans/archive/ — those are intentionally excluded.
-active=""
-newest=0
-while IFS= read -r -d '' progress; do
-  status=$(grep -m1 '^status:' "$progress" 2>/dev/null | sed 's/^status: *//' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
-  case "$status" in
-    complete|completed|done|shipped|archived) continue ;;
-  esac
-  mtime=$(stat -f %m "$progress" 2>/dev/null || stat -c %Y "$progress" 2>/dev/null || echo 0)
-  if (( mtime > newest )); then
-    newest=$mtime
-    active="$progress"
-  fi
-done < <(find "$plans_dir" -mindepth 2 -maxdepth 2 -name progress.md -print0 2>/dev/null)
+# Hooks must never block, so a missing lib is a silent no-op rather than an error.
+lib="$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+[[ -r "$lib" ]] || exit 0
+# shellcheck source=./lib.sh
+source "$lib"
 
+active=$(hook_active_progress "$plans_dir")
 [[ -z "$active" ]] && exit 0
 
 feature_dir=$(dirname "$active")
