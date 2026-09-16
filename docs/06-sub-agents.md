@@ -12,7 +12,7 @@ In the AI Fluency Framework, sub-agents make **Discernimento** concrete: indepen
 
 ## The kit's sub-agents
 
-The kit ships two — both read-only audits. The bar for shipping more is high: a sub-agent has to do something a skill can't.
+The kit ships three — all read-only. The bar for shipping more is high: a sub-agent has to do something a skill can't.
 
 ### `plan-reviewer`
 
@@ -28,9 +28,30 @@ Use it: before opening a feature PR, before tagging a release, after touching in
 
 The read-only restriction is the whole point of both. A skill could *describe* the audit; only a sub-agent with a restricted tool list can *enforce* that the audit doesn't turn into a drive-by refactor. That structural guarantee is what makes it worth the extra hop.
 
-### Why not block-builder / rest-builder?
+### `playground-verifier`
 
-Tempting, but skills cover that ground more cheaply. A sub-agent without tool restrictions is just a skill with extra ceremony — same context isolation cost, same prompt-as-source-of-truth, no enforcement. Block and REST work is handled by the `wp-block-development` and `wp-rest-api` skills the kit pulls in from [WordPress/agent-skills](https://github.com/WordPress/agent-skills).
+Read-only, plus the `wp-playground` MCP tools. Boots the plugin in an ephemeral WordPress instance **at the versions the plugin's own header declares**, mounts the working tree, then activates it, checks the error log, confirms every `register_rest_route` call actually resolves at runtime, deactivates, uninstalls, and verifies no options are left behind. Reports with the same `severity · evidence · suggested fix` shape as the other two, and always tears the instance down.
+
+Use it: before opening a feature PR (in parallel with `security-reviewer`), and immediately after a scaffold.
+
+This one exists because of a real failure. Kit v1.0.2 fixed a scaffold that fataled the moment you activated it — the Composer autoload was PSR-4 while the files used WordPress's `class-{name}.php` convention. It passed phpcs, passed the security review, and shipped in two releases, because **nothing in `quality.sh` boots WordPress**. Static analysis proves the code is well-formed. Only running it proves it works.
+
+### Why not block-builder / rest-builder / planner / coder / tester?
+
+Tempting, and it's the first structure most people reach for — one agent per phase of the development process. But a sub-agent without tool restrictions is just a skill with extra ceremony: same context isolation cost, same prompt-as-source-of-truth, no enforcement.
+
+Run each candidate through the three reasons at the top of this page and most of them collapse:
+
+| Candidate | Verdict |
+|---|---|
+| Planner | Already a skill (`wordpress-feature` writes spec + plan) — and `plan-reviewer` audits the output |
+| Coder / block-builder / rest-builder | Needs the main thread's context and hands back a diff, not a conclusion. Covered by the `wp-block-development` and `wp-rest-api` skills the kit pulls from [WordPress/agent-skills](https://github.com/WordPress/agent-skills) |
+| Test-writer | Needs `Edit`. No tool restriction to enforce, so: skill |
+| Test-runner / verifier | **Clears the bar** — needs MCP tools the main agent shouldn't hold, dumps thousands of log lines, must not be able to "fix" what it finds. This is `playground-verifier` |
+| Reviewer | Clears the bar twice over — `plan-reviewer`, `security-reviewer` |
+| Releaser | Deterministic. That's a script and a hook, not a judgement call |
+
+The pattern: delegate work whose **output is a conclusion**, not work whose output is a diff. A conclusion survives the trip back across the context boundary; a diff written by an agent you couldn't watch does not.
 
 ## Tool restriction is the lever
 

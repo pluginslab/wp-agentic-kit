@@ -22,7 +22,7 @@ Decide first: **feature** (gets spec + plan, possibly its own PR) or **maintenan
     - The user can override either direction.
 5. **Implement.** After the plan PR merges (or immediately for "proceed"), mirror open plan steps into the harness task tool (e.g. `TaskCreate` if available). Tick off as you go; append to `progress.md`.
 6. **Findings (lazy).** When an MCP lookup (`wp-devdocs`, `wp-blockmarkup`) surfaces a non-obvious fact that shaped the code, append to `findings.md`. Skip if nothing surprised you.
-7. **Ship.** Run `./scripts/quality.sh`. Open the feature PR. Dispatch `security-reviewer` on the diff. After merge, archive the feature dir to `.claude/plans/archive/{YYYY-MM-DD}-{slug}/`.
+7. **Ship.** Run `./scripts/quality.sh`. Open the feature PR. Dispatch `security-reviewer` and `playground-verifier` on the diff — in one message so they run concurrently; they don't depend on each other. `quality.sh` proves the code is well-formed; `playground-verifier` proves it runs. After merge, archive the feature dir to `.claude/plans/archive/{YYYY-MM-DD}-{slug}/`.
 
 ## Maintenance mode
 
