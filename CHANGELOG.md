@@ -2,6 +2,20 @@
 
 The kit's evolution, kept for humans. Per-feature progress lives in `.claude/plans/`.
 
+## v1.0.4 — 2026-09-16
+
+### Fixed
+
+- **The planning layer was dead on Linux.** `session-start.sh`, `user-prompt-submit.sh` and `stop.sh` each derived a file's mtime with `stat -f %m "$f" || stat -c %Y "$f"`. That is correct on BSD/macOS. On GNU/Linux `-f` means *file system status*, so `%m` is not a format string — it is parsed as a second FILE argument. GNU prints a six-line filesystem dump for `$f`, **then** exits 1 because no file named `%m` exists, so the `||` fallback runs too and the capture holds both. Arithmetic on that blob is a syntax error, the comparison silently evaluates false, and all three hooks concluded there was no active feature.
+
+  Net effect: no plan injection on every turn, no session-start banner, no `progress.md` timestamping — the entire Descrição mechanism, silently inert, on every Linux machine. Green on the author's laptop the whole time.
+
+  Found by the new CI workflow on its first run: 17 failures on Linux, 0 on macOS.
+
+- **Hook logic is no longer triplicated.** The active-feature selection was copy-pasted into all three hooks, with a comment in `stop.sh` asking the reader to keep them "in lockstep" by hand — which is how they came to share an identical bug. `.claude/hooks/lib.sh` now owns `hook_mtime`, `hook_is_complete` and `hook_active_progress`. `hook_mtime` probes once for which `stat` the machine has and validates its own output is numeric, so no future platform can reintroduce this class of bug.
+
+- **A flaky test in `test-stop.sh`.** The multi-feature case rewrote both fixtures with `sed -i.bak`, making their mtimes equal to the second, then `touch`ed the newer one to break the tie. Since mtime resolution here is whole seconds, that only won a sub-second race — which macOS happened to win and Linux consistently lost. It now pushes the older fixture into the past with `touch -t`, which is portable and deterministic.
+
 ## v1.0.3 — 2026-06-11
 
 ### Added
