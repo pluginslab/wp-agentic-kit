@@ -14,11 +14,6 @@
         "wp-coding-standards/wpcs": "^3.1",
         "yoast/phpunit-polyfills": "^2.0"
     },
-    "autoload": {
-        "classmap": [
-            "includes/"
-        ]
-    },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
