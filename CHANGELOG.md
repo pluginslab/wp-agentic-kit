@@ -14,6 +14,12 @@ The kit's evolution, kept for humans. Per-feature progress lives in `.claude/pla
 
 - **Hook logic is no longer triplicated.** The active-feature selection was copy-pasted into all three hooks, with a comment in `stop.sh` asking the reader to keep them "in lockstep" by hand — which is how they came to share an identical bug. `.claude/hooks/lib.sh` now owns `hook_mtime`, `hook_is_complete` and `hook_active_progress`. `hook_mtime` probes once for which `stat` the machine has and validates its own output is numeric, so no future platform can reintroduce this class of bug.
 
+- **The pre-commit gate never fired for the most common way to commit.** `pre-commit.sh` matched `git commit*` as a *prefix*, so it only triggered when the command began with those words. `git add -A && git commit -m x` — the idiom most people and most agents actually type — sailed straight past it, as did `cd sub && git commit` and `git -C dir commit`. The gate looked present and was inert for the shapes that matter. It now matches `git … commit` anywhere in the command, allowing flags and paths between the two words but not a command separator.
+
+  The tradeoff is that a command merely *mentioning* committing (`git log --grep=commit`) now runs the suite. That is the safe direction — a needless quality run costs seconds, a skipped gate costs a broken commit — and a block now names the command that triggered it, so a false positive explains itself.
+
+- **The pre-commit gate silently disabled itself without `python3`.** The payload was parsed with `python3 -c` and nothing checked whether the interpreter existed. On a host without it the capture came back empty, matched no pattern, and the hook exited 0 — no gate, no warning, no way to notice. It now tries `python3`, falls back to `jq`, and if neither is available says **"THE QUALITY GATE IS NOT RUNNING"** on stderr. It still does not block, because this hook fires before every Bash call and blocking on its own internal errors would wedge the session — but failing open silently and failing open loudly are very different things.
+
 - **A flaky test in `test-stop.sh`.** The multi-feature case rewrote both fixtures with `sed -i.bak`, making their mtimes equal to the second, then `touch`ed the newer one to break the tie. Since mtime resolution here is whole seconds, that only won a sub-second race — which macOS happened to win and Linux consistently lost. It now pushes the older fixture into the past with `touch -t`, which is portable and deterministic.
 
 ## v1.0.3 — 2026-06-11
