@@ -82,21 +82,33 @@ assert_file_contains "cli → classPrefix joins on underscore" "$CLI" ".join('_'
 # --- Case 4: deriveIdentity produces the expected forms ---
 # Exercise the real derivation rather than trusting the source reads right.
 # node evaluates the same expressions the CLI uses, for a representative slug.
-derived=$(node -e '
-  const slug = "acme-order-tracker";
-  const cap = s => s[0].toUpperCase() + s.slice(1);
-  const parts = slug.split("-").filter(Boolean);
-  console.log([
-    parts.map(cap).join(""),          // namespace
-    parts.map(cap).join("_"),         // classPrefix
-    slug.toUpperCase().replace(/-/g, "_"),
-    slug.replace(/-/g, "_"),
-  ].join(" "));
-' 2>/dev/null)
+#
+# Guarded on node being installed. The CLI is a Node program, so a host without
+# node cannot run the scaffolder at all and has nothing to assert about it —
+# but the rest of this file is plain bash and stays useful. Without the guard
+# this failed with a baffling `got ''`, because the error was swallowed by a
+# 2>/dev/null. That is the same "the test encodes the author's machine" trap
+# that hid the Linux mtime bug in the hooks; it does not get a pass here just
+# because it is our own test.
+if command -v node >/dev/null 2>&1; then
+  derived=$(node -e '
+    const slug = "acme-order-tracker";
+    const cap = s => s[0].toUpperCase() + s.slice(1);
+    const parts = slug.split("-").filter(Boolean);
+    console.log([
+      parts.map(cap).join(""),          // namespace
+      parts.map(cap).join("_"),         // classPrefix
+      slug.toUpperCase().replace(/-/g, "_"),
+      slug.replace(/-/g, "_"),
+    ].join(" "));
+  ')
 
-assert_equals "deriveIdentity → all four forms for acme-order-tracker" \
-  "AcmeOrderTracker Acme_Order_Tracker ACME_ORDER_TRACKER acme_order_tracker" \
-  "$derived"
+  assert_equals "deriveIdentity → all four forms for acme-order-tracker" \
+    "AcmeOrderTracker Acme_Order_Tracker ACME_ORDER_TRACKER acme_order_tracker" \
+    "$derived"
+else
+  echo "  - skipped: deriveIdentity check needs node on PATH"
+fi
 
 # --- Case 5: the main plugin file gets renamed, not just rewritten ---
 # WordPress expects {slug}.php; leaving pl-example.php in place breaks the
